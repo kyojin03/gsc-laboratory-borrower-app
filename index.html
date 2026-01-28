@@ -144,6 +144,20 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
 
+    /* Entry table inputs */
+    .entry-input{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      width:100%;
+      outline:none;
+      background:#fff;
+    }
+    .entry-input:focus{
+      border-color:var(--gsc-blue-2);
+      box-shadow:0 0 0 3px rgba(37,99,235,0.15);
+    }
+
     /* Print */
     @media print{
       header, .tabs, .no-print, footer, .toast{ display:none !important; }
@@ -199,15 +213,50 @@
       </div>
     </div>
 
+    <!-- NEW: TABLE INPUTS (Equipment + Consumables) -->
     <div class="row" style="margin-top:10px;">
-      <div class="field">
+      <div class="field" style="flex: 1 1 380px;">
         <label>Equipment Borrowed (optional)</label>
-        <textarea id="fEquip" placeholder="Example: Test tube - 10; Beaker - 2"></textarea>
+        <div class="table-wrap" style="margin-top:6px;">
+          <table id="equipEntryTable">
+            <thead>
+              <tr>
+                <th style="width:70%;">Equipment</th>
+                <th style="width:20%;">Qty</th>
+                <th class="no-print" style="width:10%;">&nbsp;</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="row no-print" style="margin-top:8px;">
+          <button class="btn secondary" type="button" id="addEquipRowBtn">+ Add equipment</button>
+        </div>
+
+        <!-- Hidden: still submitted to Google Form -->
+        <textarea id="fEquip" style="display:none;"></textarea>
       </div>
 
-      <div class="field">
+      <div class="field" style="flex: 1 1 380px;">
         <label>Consumables Borrowed (optional)</label>
-        <textarea id="fCons" placeholder="Example: Gloves - 1 box; Alcohol - 500 mL"></textarea>
+        <div class="table-wrap" style="margin-top:6px;">
+          <table id="consEntryTable">
+            <thead>
+              <tr>
+                <th style="width:70%;">Consumable</th>
+                <th style="width:20%;">Qty</th>
+                <th class="no-print" style="width:10%;">&nbsp;</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="row no-print" style="margin-top:8px;">
+          <button class="btn secondary" type="button" id="addConsRowBtn">+ Add consumable</button>
+        </div>
+
+        <!-- Hidden: still submitted to Google Form -->
+        <textarea id="fCons" style="display:none;"></textarea>
       </div>
     </div>
 
@@ -427,7 +476,7 @@
           <tbody></tbody>
         </table>
       </div>
-      <div class="note">Qty comes from patterns like <b>Beaker - 2</b>. If no number is found, it counts as 1.</div>
+      <div class="note">Qty comes from patterns like <b>Beaker - 2</b> OR <b>Beaker 2</b>. If no number is found, it counts as 1.</div>
     </div>
 
     <div class="card" style="margin-top:12px;">
@@ -552,72 +601,157 @@ window.addEventListener("DOMContentLoaded", () => {
     return "";
   }
 
-  // ========= NEW: Equipment/Consumables parsing + aggregation =========
+  // =========================
+  // NEW: Entry tables (Log tab)
+  // =========================
 
-  function normalizeItemName(s){
-    return String(s || "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, " ");
+  function addEntryRow(tbodyEl, kind){
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td><input class="entry-input ${kind}-name" placeholder="${kind === "equip" ? "e.g., Microscope" : "e.g., Gloves"}" /></td>
+      <td><input class="entry-input ${kind}-qty" type="number" min="1" step="1" placeholder="1" /></td>
+      <td class="no-print">
+        <button type="button" class="btn danger ${kind}-remove" style="padding:8px 10px;">×</button>
+      </td>
+    `;
+
+    tr.querySelector(`.${kind}-remove`).addEventListener("click", () => tr.remove());
+    tbodyEl.appendChild(tr);
   }
 
-  // Supports:
-  // "Test tube - 10; Beaker - 2"
-  // "Gloves - 1 box\nAlcohol - 500 mL"
-  // If qty missing, counts as 1.
+  function tableToText(kind){
+    const tableId = kind === "equip" ? "equipEntryTable" : "consEntryTable";
+    const table = el(tableId);
+    const rows = [...table.querySelectorAll("tbody tr")];
+
+    const parts = [];
+    for (const r of rows){
+      const name = r.querySelector(`.${kind}-name`)?.value?.trim() || "";
+      const qtyRaw = r.querySelector(`.${kind}-qty`)?.value?.trim() || "";
+      const qty = Number(qtyRaw);
+
+      if (!name) continue;
+      const safeQty = Number.isFinite(qty) && qty > 0 ? qty : 1;
+      parts.push(`${name} - ${safeQty}`);
+    }
+    return parts.join("; ");
+  }
+
+  function syncEntryTablesToHiddenTextareas(){
+    el("fEquip").value = tableToText("equip");
+    el("fCons").value  = tableToText("cons");
+  }
+
+  function clearEntryTables(){
+    el("equipEntryTable").querySelector("tbody").innerHTML = "";
+    el("consEntryTable").querySelector("tbody").innerHTML = "";
+  }
+
+  // =========================
+  // Parsing + aggregation for KPIs/Reports
+  // Supports BOTH:
+  //  - "Microscope - 1; Slides - 2"
+  //  - "Microscope 1 slides 2"
+  // =========================
+
+  function normalizeItemName(s){
+    return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
   function parseItemList(text){
     const raw = String(text || "").trim();
     if (!raw) return [];
 
-    const parts = raw.split(/[\n;]+/).map(p => p.trim()).filter(Boolean);
+    // Split strong separators first; each chunk might still contain multiple pairs
+    const chunks = raw
+      .replace(/,/g, ";")
+      .split(/[\n;]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
 
-    return parts.map(p => {
-      // allow: "Item - 10", "Item: 10", "Item = 10", "Item - 500 mL"
-      const m = p.match(/^(.+?)(?:\s*[-:=]\s*)(.+)$/);
-      if (!m) {
-        const nameRaw = p.trim();
-        return { nameRaw, nameKey: normalizeItemName(nameRaw), qty: 1, unit: "" };
+    const items = [];
+
+    for (const chunk of chunks){
+      // Prefer explicit "name - qty" / "name: qty" / "name=qty"
+      const explicit = chunk.match(/^(.+?)(?:\s*[-:=]\s*)(.+)$/);
+      if (explicit){
+        const nameRaw = explicit[1].trim();
+        const rhs = explicit[2].trim();
+        const qm = rhs.match(/^(\d+(?:\.\d+)?)/);
+        const qty = qm ? Number(qm[1]) : 1;
+
+        if (nameRaw){
+          items.push({
+            nameRaw,
+            nameKey: normalizeItemName(nameRaw),
+            qty: isFinite(qty) ? qty : 1,
+            unit: ""
+          });
+          continue;
+        }
       }
 
-      const nameRaw = m[1].trim();
-      const rhs = m[2].trim();
+      // Fallback: "name qty name qty" parser
+      const tokens = chunk.split(/\s+/).filter(Boolean);
+      let nameParts = [];
+      let foundAny = false;
 
-      const qm = rhs.match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
-      const qty = qm ? Number(qm[1]) : 1;
-      const unit = qm ? (qm[2] || "").trim() : "";
+      for (const tok of tokens){
+        if (/^\d+(\.\d+)?$/.test(tok)){
+          const nameRaw = nameParts.join(" ").trim();
+          const qty = Number(tok);
+          if (nameRaw){
+            foundAny = true;
+            items.push({
+              nameRaw,
+              nameKey: normalizeItemName(nameRaw),
+              qty: isFinite(qty) ? qty : 1,
+              unit: ""
+            });
+          }
+          nameParts = [];
+        } else {
+          nameParts.push(tok);
+        }
+      }
 
-      return {
-        nameRaw,
-        nameKey: normalizeItemName(nameRaw),
-        qty: isFinite(qty) ? qty : 1,
-        unit
-      };
-    });
+      // If it ends with leftover words and no qty, count as 1
+      const leftover = nameParts.join(" ").trim();
+      if (leftover){
+        items.push({
+          nameRaw: leftover,
+          nameKey: normalizeItemName(leftover),
+          qty: 1,
+          unit: ""
+        });
+      }
+
+      // If we somehow found nothing, still treat whole chunk as 1
+      if (!foundAny && !leftover && chunk.trim()){
+        items.push({
+          nameRaw: chunk.trim(),
+          nameKey: normalizeItemName(chunk),
+          qty: 1,
+          unit: ""
+        });
+      }
+    }
+
+    return items;
   }
 
   function getEquipText(r){
-    return getField(
-      r,
-      "EquipmentBorrowed",
-      "Equipment Borrowed",
-      "Equipment Borrowed (optional)",
-      "Equipment"
-    );
+    return getField(r, "EquipmentBorrowed", "Equipment Borrowed", "Equipment Borrowed (optional)", "Equipment");
   }
   function getConsText(r){
-    return getField(
-      r,
-      "ConsumablesBorrowed",
-      "Consumables Borrowed",
-      "Consumables Borrowed (optional)",
-      "Consumables"
-    );
+    return getField(r, "ConsumablesBorrowed", "Consumables Borrowed", "Consumables Borrowed (optional)", "Consumables");
   }
 
   function aggregateItemUsage(rows, type /* "equip"|"cons" */){
     const qtyBy = new Map();      // nameKey -> total qty
-    const mentionsBy = new Map(); // nameKey -> count of times item appears
-    const displayBy = new Map();  // nameKey -> nameRaw first seen
+    const mentionsBy = new Map(); // nameKey -> count of appearances
+    const displayBy = new Map();  // nameKey -> first seen nameRaw
 
     for (const r of rows){
       const list = parseItemList(type === "equip" ? getEquipText(r) : getConsText(r));
@@ -637,15 +771,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
     items.sort((a,b) => b.qty - a.qty);
     const totalQty = items.reduce((acc, x) => acc + (x.qty || 0), 0);
-
     return { items, totalQty, top: items[0] || null };
   }
 
-  function renderTopTable(tableEl, items, maxRows = 12){
+  function renderTopTable(tableEl, items, maxRows = 15){
     const tbody = tableEl.querySelector("tbody");
     tbody.innerHTML = "";
-
     const slice = items.slice(0, maxRows);
+
     if (!slice.length){
       tbody.innerHTML = `<tr><td colspan="3" class="muted">—</td></tr>`;
       return;
@@ -661,8 +794,6 @@ window.addEventListener("DOMContentLoaded", () => {
       tbody.appendChild(tr);
     });
   }
-
-  // ========= existing table rendering =========
 
   function renderTable(tableEl, rows) {
     const thead = tableEl.querySelector("thead");
@@ -711,7 +842,6 @@ window.addEventListener("DOMContentLoaded", () => {
     el("kpiGroups").textContent = groupsSum;
     el("kpiDeptSplit").textContent = `CAHP ${cahp} • CNAM ${cnam}`;
 
-    // NEW: equipment/consumables KPIs for current view
     const eqAgg = aggregateItemUsage(rows, "equip");
     const coAgg = aggregateItemUsage(rows, "cons");
 
@@ -827,9 +957,16 @@ window.addEventListener("DOMContentLoaded", () => {
     el("fIncidentDetails").value = "";
     setIncidentUI();
     el("logStatus").textContent = "";
+
+    clearEntryTables();
+    addEntryRow(el("equipEntryTable").querySelector("tbody"), "equip");
+    addEntryRow(el("consEntryTable").querySelector("tbody"), "cons");
   }
 
   function submitLog(){
+    // NEW: generate text from tables into hidden textareas
+    syncEntryTablesToHiddenTextareas();
+
     const dept = el("fDept").value.trim();
     const faculty = el("fFaculty").value.trim();
     const groups = el("fGroups").value.trim();
@@ -881,7 +1018,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }, 900);
   }
 
-  // ========= NEW: Report range + report calculations =========
+  // ========= Report range + report calculations =========
 
   function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
   function endOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23,59,59,999); }
@@ -890,7 +1027,6 @@ window.addEventListener("DOMContentLoaded", () => {
     const period = el("period").value;
     const monthVal = el("monthPick").value; // "YYYY-MM"
     if (!monthVal){
-      // fallback: use current filter From/To if available, else whole dataset
       const from = el("fromDate").value ? new Date(el("fromDate").value) : null;
       const to = el("toDate").value ? new Date(el("toDate").value) : null;
       if (from && to) return { from: startOfDay(from), to: endOfDay(to), label: "Custom (From/To filters)" };
@@ -899,19 +1035,18 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const [Y, M] = monthVal.split("-").map(Number);
     const monthStart = new Date(Y, M-1, 1);
-    const monthEnd = new Date(Y, M, 0); // last day of month
+    const monthEnd = new Date(Y, M, 0);
 
     if (period === "monthly"){
       return { from: startOfDay(monthStart), to: endOfDay(monthEnd), label: monthStart.toLocaleString(undefined,{month:"long",year:"numeric"}) };
     }
 
     if (period === "quarterly"){
-      const q = Math.floor((M-1)/3);           // 0..3
-      const qStartMonth = q*3;                 // 0,3,6,9
+      const q = Math.floor((M-1)/3);
+      const qStartMonth = q*3;
       const from = new Date(Y, qStartMonth, 1);
       const to = new Date(Y, qStartMonth+3, 0);
-      const qNum = q+1;
-      return { from: startOfDay(from), to: endOfDay(to), label: `Q${qNum} ${Y}` };
+      return { from: startOfDay(from), to: endOfDay(to), label: `Q${q+1} ${Y}` };
     }
 
     if (period === "semiannual"){
@@ -921,7 +1056,6 @@ window.addEventListener("DOMContentLoaded", () => {
       return { from: startOfDay(from), to: endOfDay(to), label: `Semi-Annual (H${h}) ${Y}` };
     }
 
-    // annual
     const from = new Date(Y, 0, 1);
     const to = new Date(Y, 12, 0);
     return { from: startOfDay(from), to: endOfDay(to), label: `Annual ${Y}` };
@@ -938,7 +1072,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   function runReport(){
     const { from, to, label } = reportRangeFromUI();
-    const base = [...viewRows]; // report respects current filters
+    const base = [...viewRows];
     const reportRows = rowsInRange(base, from, to);
 
     el("reportTitle").textContent = `Report: ${label} • Records: ${reportRows.length}`;
@@ -957,7 +1091,6 @@ window.addEventListener("DOMContentLoaded", () => {
     el("rGroups").textContent = groupsSum;
     el("rEqCon").textContent = `${eqNonEmpty} / ${coNonEmpty}`;
 
-    // incidents list
     if (!incidents.length){
       el("incidentList").textContent = "—";
     }else{
@@ -970,7 +1103,6 @@ window.addEventListener("DOMContentLoaded", () => {
       }).join("\n");
     }
 
-    // NEW: equipment/consumables report KPIs + tables
     const eqAgg = aggregateItemUsage(reportRows, "equip");
     const coAgg = aggregateItemUsage(reportRows, "cons");
 
@@ -999,13 +1131,26 @@ window.addEventListener("DOMContentLoaded", () => {
   el("submitLogBtn").addEventListener("click", submitLog);
   el("clearLogBtn").addEventListener("click", clearLogForm);
 
-  // Reports buttons
+  // Reports
   el("runReportBtn").addEventListener("click", runReport);
   el("printBtn").addEventListener("click", () => window.print());
+
+  // NEW: add-row buttons for entry tables
+  el("addEquipRowBtn").addEventListener("click", () => {
+    addEntryRow(el("equipEntryTable").querySelector("tbody"), "equip");
+  });
+  el("addConsRowBtn").addEventListener("click", () => {
+    addEntryRow(el("consEntryTable").querySelector("tbody"), "cons");
+  });
 
   // Init
   setIncidentUI();
   setActiveTab("log");
+
+  // init with one blank row each
+  addEntryRow(el("equipEntryTable").querySelector("tbody"), "equip");
+  addEntryRow(el("consEntryTable").querySelector("tbody"), "cons");
+
   loadData();
 });
 </script>
