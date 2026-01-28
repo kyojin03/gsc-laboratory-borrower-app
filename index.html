@@ -71,14 +71,15 @@
     }
     .row{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
     label{ font-size:12px; color:var(--muted); font-weight:800; }
-    .field{ display:flex; flex-direction:column; gap:6px; }
+    .field{ display:flex; flex-direction:column; gap:6px; flex: 1 1 220px; }
     input, select, textarea{
       padding:10px 12px; border-radius:12px;
       border:1px solid var(--border);
       background:#fff;
-      min-width:220px;
       outline:none;
+      width:100%;
     }
+    textarea{ min-height: 80px; resize: vertical; }
     input:focus, select:focus, textarea:focus{
       border-color:var(--gsc-blue-2);
       box-shadow:0 0 0 3px rgba(37,99,235,0.15);
@@ -115,6 +116,8 @@
 
     .muted{ color:var(--muted); font-size:13px; }
     .note{ font-size:12px; color:var(--muted); margin-top:8px; }
+    .ok{ color: var(--ok); font-weight: 900; }
+    .err{ color: var(--danger); font-weight: 900; }
 
     footer{
       position:fixed; right:14px; bottom:10px;
@@ -125,9 +128,25 @@
       backdrop-filter: blur(6px);
     }
 
+    .toast{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 18px;
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 13px;
+      display: none;
+      z-index: 9999;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
     /* Print */
     @media print{
-      header, .tabs, .no-print, footer{ display:none !important; }
+      header, .tabs, .no-print, footer, .toast{ display:none !important; }
       body{ background:#fff; }
       .wrap{ margin:0; }
       .card{ box-shadow:none; }
@@ -144,16 +163,85 @@
   <span class="pill">GSC • Blue &amp; White</span>
 </header>
 
+<div class="toast" id="toast"></div>
+
 <main class="wrap">
 
   <nav class="tabs no-print" aria-label="Navigation tabs">
-    <button class="tab active" data-tab="logbook">Logbook</button>
+    <button class="tab active" data-tab="log">Log Borrower Slip</button>
+    <button class="tab" data-tab="logbook">Logbook</button>
     <button class="tab" data-tab="reports">Reports</button>
     <button class="tab" data-tab="incidents">Incidents</button>
   </nav>
 
-  <!-- Top controls -->
-  <section class="card no-print">
+  <!-- LOG TAB -->
+  <section class="card" id="tab-log">
+    <h3 style="margin:0 0 10px;">Log Borrower Slip</h3>
+    <div class="muted">This logs directly into your Google Form (no Apps Script). Timestamp is automatic.</div>
+
+    <div class="row" style="margin-top:12px;">
+      <div class="field">
+        <label>Department</label>
+        <select id="fDept">
+          <option value="CAHP">CAHP</option>
+          <option value="CNAM">CNAM</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Faculty Name</label>
+        <input id="fFaculty" placeholder="e.g., Juan Dela Cruz" />
+      </div>
+
+      <div class="field">
+        <label>Number of Groups Requested (optional)</label>
+        <input id="fGroups" type="number" min="1" placeholder="e.g., 5" />
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <div class="field">
+        <label>Equipment Borrowed (optional)</label>
+        <textarea id="fEquip" placeholder="Example: Test tube - 10; Beaker - 2"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Consumables Borrowed (optional)</label>
+        <textarea id="fCons" placeholder="Example: Gloves - 1 box; Alcohol - 500 mL"></textarea>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <div class="field">
+        <label>Incident?</label>
+        <select id="fIncident">
+          <option value="no">no</option>
+          <option value="yes">yes</option>
+        </select>
+      </div>
+
+      <div class="field" id="incidentDetailsWrap" style="display:none;">
+        <label>Incident Details (required if yes)</label>
+        <input id="fIncidentDetails" placeholder="Describe the incident..." />
+      </div>
+    </div>
+
+    <div class="row no-print" style="margin-top:12px;">
+      <button class="btn" id="submitLogBtn">Submit Slip</button>
+      <button class="btn secondary" id="clearLogBtn">Clear</button>
+      <div class="muted" id="logStatus" style="align-self:center;"></div>
+    </div>
+
+    <div class="note">
+      Tip: You can leave Equipment empty and fill Consumables only (or vice versa). But at least one should be filled.
+    </div>
+
+    <!-- Hidden iframe target to submit Google Form without leaving page -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+  </section>
+
+  <!-- Top controls for logbook/reports/incidents -->
+  <section class="card no-print" id="dataControls">
     <div class="row">
       <button id="loadBtn" class="btn">Load / Refresh Data</button>
       <button id="exportBtn" class="btn secondary" disabled>Export Current View (CSV)</button>
@@ -187,14 +275,10 @@
 
       <button id="applyBtn" class="btn">Apply Filters</button>
     </div>
-
-    <div class="note">
-      Data entry stays in <b>Google Form</b>. This app is for <b>viewing + reports</b>.
-    </div>
   </section>
 
   <!-- KPI summary -->
-  <section class="card">
+  <section class="card" id="kpiCard">
     <div class="kpis">
       <div class="kpi">
         <div class="label">Records</div>
@@ -220,7 +304,7 @@
   </section>
 
   <!-- LOGBOOK TAB -->
-  <section class="card" id="tab-logbook">
+  <section class="card" id="tab-logbook" style="display:none;">
     <h3 style="margin:0 0 10px;">Logbook</h3>
     <div class="muted" id="logbookHint">Load data to see records.</div>
 
@@ -257,7 +341,7 @@
     </div>
 
     <div class="note no-print">
-      Tip: Use <b>Faculty</b> filter above for faculty-specific report, or leave blank for ALL.
+      Tip: Use <b>Department</b> and/or <b>Faculty</b> filters above to extract ALL or specific faculty.
     </div>
 
     <div style="margin-top:12px;" id="reportTitle" class="muted"></div>
@@ -287,7 +371,7 @@
 
     <div class="card" style="margin-top:12px; border-style:dashed;">
       <div style="font-weight:1000;">Incidents (within report)</div>
-      <div class="muted" id="incidentList">—</div>
+      <pre class="muted" id="incidentList" style="white-space:pre-wrap; margin:8px 0 0;">—</pre>
     </div>
   </section>
 
@@ -309,8 +393,24 @@
 <footer>Developed by Piolo Bernardino — Laboratory Custodian</footer>
 
 <script>
-/** ✅ Put your CSV link here (must end with pub?output=csv) */
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStDm_fif_7EAGcuDY1tEhTjFgNoV3G1uZEXWB_eQkwNmprD9BYCWbugmCITEqviHPvNMYbXj7iIc4I/pub?output=csv";
+/** ✅ Set your Google Sheet CSV link here (must end with pub?output=csv) */
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStDm_fif_7EAGcuDY1tEhTjFgNoV3G1uZEXWB_eQkwNmprD9BYCWbugmCITEqviHPvNMYbXj7iIc4I/pub?output=csv
+";
+
+/** ✅ Your Google Form backend (from the link you provided) */
+const FORM_ID = "1FAIpQLSfUct13cYyqYuLEDSUoo-CAcl77faei_jwSCrsryzp_7T_x4A";
+const FORM_POST_URL = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse`;
+
+/** Entry IDs from your prefilled link */
+const ENTRY = {
+  Department: "entry.2142992831",
+  FacultyName: "entry.376247451",
+  GroupsRequested: "entry.2075140760",
+  EquipmentBorrowed: "entry.1288054742",
+  ConsumablesBorrowed: "entry.1746560168",
+  Incident: "entry.10980143",
+  IncidentDetails: "entry.2029578704",
+};
 
 /** State */
 let allRows = [];
@@ -319,6 +419,27 @@ let headers = [];
 
 /** Helpers */
 const el = (id) => document.getElementById(id);
+
+function toast(msg){
+  const t = el("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => t.style.display = "none", 2600);
+}
+
+function setActiveTab(tabName){
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tabName));
+  el("tab-log").style.display      = tabName === "log" ? "" : "none";
+  el("tab-logbook").style.display  = tabName === "logbook" ? "" : "none";
+  el("tab-reports").style.display  = tabName === "reports" ? "" : "none";
+  el("tab-incidents").style.display= tabName === "incidents" ? "" : "none";
+
+  // Show data controls + KPIs only for non-log tab (still useful everywhere but cleaner)
+  const showData = (tabName !== "log");
+  el("dataControls").style.display = showData ? "" : "none";
+  el("kpiCard").style.display = showData ? "" : "none";
+}
 
 function parseCSV(text) {
   // Basic CSV parser that supports quoted commas
@@ -357,7 +478,6 @@ function rowsToObjects(parsed) {
 }
 
 function parseTimestamp(ts) {
-  // Google Forms timestamp often parses fine with Date()
   const d = new Date(ts);
   return isNaN(d.getTime()) ? null : d;
 }
@@ -371,13 +491,6 @@ function getField(obj, ...keys) {
     if (k in obj) return obj[k];
   }
   return "";
-}
-
-function setActiveTab(tabName){
-  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tabName));
-  el("tab-logbook").style.display = tabName === "logbook" ? "" : "none";
-  el("tab-reports").style.display = tabName === "reports" ? "" : "none";
-  el("tab-incidents").style.display = tabName === "incidents" ? "" : "none";
 }
 
 function applyFilters() {
@@ -463,7 +576,6 @@ function renderAll(){
 
   renderTable(el("table"), viewRows);
 
-  // Incidents tab table (filtered view)
   const onlyInc = viewRows.filter(r => normalizeYes(getField(r, "Incident", "Incident?")));
   renderTable(el("incTable"), onlyInc);
 }
@@ -498,10 +610,9 @@ function resetFilters(){
 }
 
 function reportRange(period, monthValue){
-  // monthValue like "2026-01"
   const now = new Date();
   let year = now.getFullYear();
-  let month = now.getMonth(); // 0-based
+  let month = now.getMonth();
 
   if (monthValue) {
     const [y, m] = monthValue.split("-").map(Number);
@@ -521,21 +632,20 @@ function reportRange(period, monthValue){
     const halfStart = (month < 6) ? 0 : 6;
     start = new Date(year, halfStart, 1);
     end = new Date(year, halfStart + 6, 0, 23, 59, 59, 999);
-  } else { // annual
+  } else {
     start = new Date(year, 0, 1);
     end = new Date(year, 12, 0, 23, 59, 59, 999);
   }
 
-  return { start, end, year, month };
+  return { start, end };
 }
 
 function runReport(){
   const period = el("period").value;
   const monthValue = el("monthPick").value;
 
-  const { start, end, year, month } = reportRange(period, monthValue);
+  const { start, end } = reportRange(period, monthValue);
 
-  // Apply report on CURRENT FILTERED view (dept/fac filters), but override date range to report range.
   const dept = el("dept").value.trim().toLowerCase();
   const fac = el("faculty").value.trim().toLowerCase();
 
@@ -551,10 +661,8 @@ function runReport(){
     return d >= start && d <= end;
   });
 
-  // KPIs
   const { total, incidents, groupsSum } = kpisFor(reportRows);
 
-  // Equipment/Consumables "presence" count (since items are typed as text)
   const eqCount = reportRows.filter(r => String(getField(r,"EquipmentBorrowed")).trim() !== "").length;
   const conCount = reportRows.filter(r => String(getField(r,"ConsumablesBorrowed")).trim() !== "").length;
 
@@ -569,7 +677,6 @@ function runReport(){
 
   el("reportTitle").innerHTML = `<b>${period.toUpperCase()}</b> report${deptLabel}${facLabel}<br><span class="muted">${rangeLabel}</span>`;
 
-  // Incident list
   const incRows = reportRows
     .filter(r => normalizeYes(getField(r,"Incident","Incident?")))
     .map(r => {
@@ -585,7 +692,7 @@ function runReport(){
 
 async function loadData(){
   if (!CSV_URL || CSV_URL.includes("PASTE_YOUR_CSV_URL_HERE")) {
-    alert("Please set your CSV_URL inside index.html first.");
+    alert("Please set your CSV_URL inside index.html first (pub?output=csv).");
     return;
   }
   const btn = el("loadBtn");
@@ -599,12 +706,92 @@ async function loadData(){
     allRows = rowsToObjects(parsed);
     viewRows = [...allRows];
     renderAll();
+    toast("Data loaded.");
   }catch(err){
     alert(String(err));
   }finally{
     btn.disabled = false;
     btn.textContent = "Load / Refresh Data";
   }
+}
+
+/** LOG SUBMISSION (to Google Form, no Apps Script) */
+function setIncidentUI(){
+  const yes = el("fIncident").value === "yes";
+  el("incidentDetailsWrap").style.display = yes ? "" : "none";
+  if (!yes) el("fIncidentDetails").value = "";
+}
+
+function clearLogForm(){
+  el("fDept").value = "CAHP";
+  el("fFaculty").value = "";
+  el("fGroups").value = "";
+  el("fEquip").value = "";
+  el("fCons").value = "";
+  el("fIncident").value = "no";
+  el("fIncidentDetails").value = "";
+  setIncidentUI();
+  el("logStatus").textContent = "";
+}
+
+function submitLog(){
+  const dept = el("fDept").value.trim();
+  const faculty = el("fFaculty").value.trim();
+  const groups = el("fGroups").value.trim();
+  const equip = el("fEquip").value.trim();
+  const cons = el("fCons").value.trim();
+  const incident = el("fIncident").value.trim(); // "yes"/"no"
+  const incidentDetails = el("fIncidentDetails").value.trim();
+
+  // Basic validation
+  if (!faculty) { toast("Faculty Name is required."); return; }
+  if (!equip && !cons) { toast("Please fill Equipment or Consumables (at least one)."); return; }
+  if (incident === "yes" && !incidentDetails) { toast("Incident Details is required if incident = yes."); return; }
+
+  // Build a hidden form and submit it to Google Forms
+  const form = document.createElement("form");
+  form.action = FORM_POST_URL;
+  form.method = "POST";
+  form.target = "hidden_iframe";
+  form.style.display = "none";
+
+  const add = (name, value) => {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  };
+
+  add(ENTRY.Department, dept);
+  add(ENTRY.FacultyName, faculty);
+  add(ENTRY.GroupsRequested, groups);
+  add(ENTRY.EquipmentBorrowed, equip);
+  add(ENTRY.ConsumablesBorrowed, cons);
+  add(ENTRY.Incident, incident);
+  add(ENTRY.IncidentDetails, incidentDetails);
+
+  document.body.appendChild(form);
+
+  el("submitLogBtn").disabled = true;
+  el("logStatus").innerHTML = "<span class='muted'>Submitting…</span>";
+
+  // Submit
+  form.submit();
+
+  // Clean up
+  setTimeout(() => {
+    form.remove();
+    el("submitLogBtn").disabled = false;
+    el("logStatus").innerHTML = "<span class='ok'>Submitted ✅</span>";
+    toast("Borrower slip submitted.");
+
+    // Refresh data after a short delay (Form -> Sheet can take a moment)
+    setTimeout(() => loadData(), 2500);
+
+    // Optional: clear after submit
+    clearLogForm();
+  }, 900);
 }
 
 /** Events */
@@ -623,8 +810,13 @@ el("runReportBtn").addEventListener("click", () => {
 });
 el("printBtn").addEventListener("click", () => window.print());
 
-/** Optional: load automatically on open */
-loadData();
+el("fIncident").addEventListener("change", setIncidentUI);
+el("submitLogBtn").addEventListener("click", submitLog);
+el("clearLogBtn").addEventListener("click", clearLogForm);
+
+/** Init */
+setIncidentUI();
+setActiveTab("log");
 </script>
 </body>
 </html>
