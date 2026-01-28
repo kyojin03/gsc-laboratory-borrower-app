@@ -1142,8 +1142,6 @@ function updateReportFacultyLine(){
     const { from, to, label } = reportRangeFromUI();
     const base = [...viewRows];
     const reportRows = rowsInRange(base, from, to);
-    updateReportFacultyLine();
-
 
     el("reportTitle").textContent = `Report: ${label} • Records: ${reportRows.length}`;
       updateReportFacultyLine();
@@ -1204,7 +1202,11 @@ function updateReportFacultyLine(){
   el("clearLogBtn").addEventListener("click", clearLogForm);
 
   // Reports
-  el("runReportBtn").addEventListener("click", runReport);
+  el("runReportBtn").addEventListener("click", () => {
+  applyFilters(); // updates viewRows using dept/faculty/from/to inputs
+  runReport();    // now reportRows is truly filtered
+});
+
   el("printBtn").addEventListener("click", () => window.print());
 
   // NEW: add-row buttons for entry tables
