@@ -1,73 +1,630 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>GSC Laboratory Borrower Slip</title>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root{
+      --gsc-blue:#0B3D91;
+      --gsc-blue-2:#2563EB;
+      --bg-soft:#F5F7FF;
+      --card:#FFFFFF;
+      --text:#0F172A;
+      --muted:#64748B;
+      --border:#E2E8F0;
+      --danger:#B91C1C;
+      --ok:#065F46;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg-soft);
+      color:var(--text);
+    }
+    header{
+      background:var(--gsc-blue);
+      color:#fff;
+      padding:16px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand .title{ font-size:18px; font-weight:900; letter-spacing:0.2px; }
+    .brand .sub{ font-size:12px; opacity:0.9; margin-top:2px; }
+    .pill{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      background:rgba(255,255,255,0.16);
+      white-space:nowrap;
+    }
+
+    .wrap{ max-width:1100px; margin:16px auto 90px; padding:0 14px; display:grid; gap:12px; }
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+      background:var(--card); border:1px solid var(--border); border-radius:14px; padding:8px;
+      box-shadow: 0 2px 10px rgba(2,6,23,0.05);
+    }
+    .tab{
+      border:none; cursor:pointer;
+      padding:10px 12px; border-radius:12px;
+      font-weight:900; font-size:13px;
+      color:var(--gsc-blue);
+      background:transparent;
+    }
+    .tab.active{
+      background:rgba(37,99,235,0.10);
+      color:var(--gsc-blue);
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      box-shadow: 0 2px 10px rgba(2,6,23,0.05);
+    }
+    .row{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+    label{ font-size:12px; color:var(--muted); font-weight:800; }
+    .field{ display:flex; flex-direction:column; gap:6px; }
+    input, select, textarea{
+      padding:10px 12px; border-radius:12px;
+      border:1px solid var(--border);
+      background:#fff;
+      min-width:220px;
+      outline:none;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color:var(--gsc-blue-2);
+      box-shadow:0 0 0 3px rgba(37,99,235,0.15);
+    }
+    .btn{
+      border:none; cursor:pointer;
+      padding:10px 14px; border-radius:12px;
+      font-weight:900;
+      background:var(--gsc-blue-2);
+      color:#fff;
+    }
+    .btn:hover{ filter:brightness(0.96); }
+    .btn.secondary{ background:#fff; color:var(--gsc-blue); border:1px solid var(--border); }
+    .btn.danger{ background:var(--danger); }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+    .kpis{ display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:10px; }
+    @media (max-width: 900px){ .kpis{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .kpi{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+    }
+    .kpi .label{ font-size:12px; color:var(--muted); font-weight:900; }
+    .kpi .val{ margin-top:6px; font-size:20px; font-weight:1000; color:var(--text); }
+    .kpi .hint{ margin-top:4px; font-size:12px; color:var(--muted); }
+
+    .table-wrap{ overflow:auto; border-radius:14px; border:1px solid var(--border); background:#fff; }
+    table{ width:100%; border-collapse:collapse; }
+    th, td{ padding:10px; border-bottom:1px solid var(--border); text-align:left; font-size:13px; }
+    th{ background:rgba(11,61,145,0.08); font-weight:1000; }
+    tr:nth-child(even) td{ background:#FAFBFF; }
+
+    .muted{ color:var(--muted); font-size:13px; }
+    .note{ font-size:12px; color:var(--muted); margin-top:8px; }
+
+    footer{
+      position:fixed; right:14px; bottom:10px;
+      color:var(--muted); font-size:12px;
+      background:rgba(245,247,255,0.9);
+      padding:6px 10px; border:1px solid var(--border);
+      border-radius:999px;
+      backdrop-filter: blur(6px);
+    }
+
+    /* Print */
+    @media print{
+      header, .tabs, .no-print, footer{ display:none !important; }
+      body{ background:#fff; }
+      .wrap{ margin:0; }
+      .card{ box-shadow:none; }
+    }
+  </style>
 </head>
+
 <body>
-  <header class="header">
-    <div>
-      <div class="title">Laboratory Borrower Slip</div>
-      <div class="subtitle">Good Samaritan Colleges</div>
+<header>
+  <div class="brand">
+    <div class="title">Laboratory Borrower Slip</div>
+    <div class="sub">Good Samaritan Colleges • CAHP / CNAM</div>
+  </div>
+  <span class="pill">GSC • Blue &amp; White</span>
+</header>
+
+<main class="wrap">
+
+  <nav class="tabs no-print" aria-label="Navigation tabs">
+    <button class="tab active" data-tab="logbook">Logbook</button>
+    <button class="tab" data-tab="reports">Reports</button>
+    <button class="tab" data-tab="incidents">Incidents</button>
+  </nav>
+
+  <!-- Top controls -->
+  <section class="card no-print">
+    <div class="row">
+      <button id="loadBtn" class="btn">Load / Refresh Data</button>
+      <button id="exportBtn" class="btn secondary" disabled>Export Current View (CSV)</button>
+      <button id="resetBtn" class="btn secondary" disabled>Reset Filters</button>
     </div>
-    <span class="badge">GSC • Blue & White</span>
-  </header>
 
-  <main class="wrap">
-    <section class="card">
-      <h2>Data Source</h2>
-      <p class="muted">Paste your CSV link below (the one ending in <b>pub?output=csv</b>), then click Load.</p>
-
-      <div class="row">
-        <input id="csvUrl" class="input" placeholder="https://docs.google.com/spreadsheets/.../pub?output=csv" />
-        <button id="loadBtn" class="btn-primary">Load</button>
-      </div>
-
-      <div class="row">
-        <label class="muted">Department</label>
-        <select id="dept" class="input">
+    <div class="row" style="margin-top:12px;">
+      <div class="field">
+        <label>Department</label>
+        <select id="dept">
           <option value="">All</option>
           <option value="CAHP">CAHP</option>
           <option value="CNAM">CNAM</option>
         </select>
-
-        <label class="muted">Faculty</label>
-        <input id="faculty" class="input" placeholder="Type faculty name (optional)" />
       </div>
 
-      <div class="row">
-        <label class="muted">From</label>
-        <input id="fromDate" class="input" type="date" />
-        <label class="muted">To</label>
-        <input id="toDate" class="input" type="date" />
-        <button id="applyBtn" class="btn-primary">Apply Filters</button>
+      <div class="field">
+        <label>Faculty (optional)</label>
+        <input id="faculty" placeholder="Type faculty name (partial ok)" />
       </div>
-    </section>
 
-    <section class="card">
-      <h2>Summary</h2>
-      <div id="summary" class="muted">Load data to see summary.</div>
-    </section>
-
-    <section class="card">
-      <h2>Records</h2>
-      <div class="row">
-        <button id="exportBtn" class="btn-primary">Export Filtered CSV</button>
+      <div class="field">
+        <label>From</label>
+        <input id="fromDate" type="date" />
       </div>
-      <div class="table-wrap">
-        <table id="table">
-          <thead></thead>
-          <tbody></tbody>
-        </table>
+
+      <div class="field">
+        <label>To</label>
+        <input id="toDate" type="date" />
       </div>
-    </section>
-  </main>
 
-  <footer class="app-footer">Developed by Piolo Bernardino — Laboratory Custodian</footer>
+      <button id="applyBtn" class="btn">Apply Filters</button>
+    </div>
 
-  <script src="app.js"></script>
+    <div class="note">
+      Data entry stays in <b>Google Form</b>. This app is for <b>viewing + reports</b>.
+    </div>
+  </section>
+
+  <!-- KPI summary -->
+  <section class="card">
+    <div class="kpis">
+      <div class="kpi">
+        <div class="label">Records</div>
+        <div class="val" id="kpiRecords">—</div>
+        <div class="hint">Current view</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Incidents</div>
+        <div class="val" id="kpiIncidents">—</div>
+        <div class="hint">Incident = Yes</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Groups Requested (sum)</div>
+        <div class="val" id="kpiGroups">—</div>
+        <div class="hint">Blank ignored</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Departments split</div>
+        <div class="val" id="kpiDeptSplit">—</div>
+        <div class="hint">CAHP vs CNAM</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGBOOK TAB -->
+  <section class="card" id="tab-logbook">
+    <h3 style="margin:0 0 10px;">Logbook</h3>
+    <div class="muted" id="logbookHint">Load data to see records.</div>
+
+    <div class="table-wrap" style="margin-top:10px;">
+      <table id="table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- REPORTS TAB -->
+  <section class="card" id="tab-reports" style="display:none;">
+    <h3 style="margin:0 0 10px;">Reports</h3>
+
+    <div class="row no-print">
+      <div class="field">
+        <label>Report Period</label>
+        <select id="period">
+          <option value="monthly">Monthly</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="semiannual">Semi-Annual</option>
+          <option value="annual">Annual</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Month (for Monthly/Quarterly/Semi-Annual)</label>
+        <input id="monthPick" type="month" />
+      </div>
+
+      <button id="runReportBtn" class="btn">Run Report</button>
+      <button id="printBtn" class="btn secondary">Print Report</button>
+    </div>
+
+    <div class="note no-print">
+      Tip: Use <b>Faculty</b> filter above for faculty-specific report, or leave blank for ALL.
+    </div>
+
+    <div style="margin-top:12px;" id="reportTitle" class="muted"></div>
+
+    <div class="kpis" style="margin-top:10px;">
+      <div class="kpi">
+        <div class="label">Report Records</div>
+        <div class="val" id="rRecords">—</div>
+        <div class="hint">Within report range</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Report Incidents</div>
+        <div class="val" id="rIncidents">—</div>
+        <div class="hint">Within report range</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Groups Requested (sum)</div>
+        <div class="val" id="rGroups">—</div>
+        <div class="hint">Within report range</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Equipment / Consumables</div>
+        <div class="val" id="rEqCon">—</div>
+        <div class="hint">Count of non-empty fields</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px; border-style:dashed;">
+      <div style="font-weight:1000;">Incidents (within report)</div>
+      <div class="muted" id="incidentList">—</div>
+    </div>
+  </section>
+
+  <!-- INCIDENTS TAB -->
+  <section class="card" id="tab-incidents" style="display:none;">
+    <h3 style="margin:0 0 10px;">Incidents</h3>
+    <div class="muted">Shows only rows where <b>Incident = Yes</b>.</div>
+
+    <div class="table-wrap" style="margin-top:10px;">
+      <table id="incTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>Developed by Piolo Bernardino — Laboratory Custodian</footer>
+
+<script>
+/** ✅ Put your CSV link here (must end with pub?output=csv) */
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStDm_fif_7EAGcuDY1tEhTjFgNoV3G1uZEXWB_eQkwNmprD9BYCWbugmCITEqviHPvNMYbXj7iIc4I/pub?output=csv";
+
+/** State */
+let allRows = [];
+let viewRows = [];
+let headers = [];
+
+/** Helpers */
+const el = (id) => document.getElementById(id);
+
+function parseCSV(text) {
+  // Basic CSV parser that supports quoted commas
+  const rows = [];
+  let row = [];
+  let cur = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    const next = text[i + 1];
+
+    if (c === '"' && next === '"') { cur += '"'; i++; continue; }
+    if (c === '"') { inQuotes = !inQuotes; continue; }
+
+    if (!inQuotes && c === ",") { row.push(cur); cur = ""; continue; }
+    if (!inQuotes && (c === "\n" || c === "\r")) {
+      if (c === "\r" && next === "\n") i++;
+      row.push(cur); rows.push(row);
+      row = []; cur = "";
+      continue;
+    }
+    cur += c;
+  }
+  if (cur.length || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(cell => String(cell).trim() !== ""));
+}
+
+function rowsToObjects(parsed) {
+  headers = parsed[0].map(h => String(h || "").trim());
+  return parsed.slice(1).map(r => {
+    const obj = {};
+    headers.forEach((h, idx) => obj[h] = String(r[idx] ?? "").trim());
+    return obj;
+  });
+}
+
+function parseTimestamp(ts) {
+  // Google Forms timestamp often parses fine with Date()
+  const d = new Date(ts);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function normalizeYes(v) {
+  return String(v || "").trim().toLowerCase().startsWith("y");
+}
+
+function getField(obj, ...keys) {
+  for (const k of keys) {
+    if (k in obj) return obj[k];
+  }
+  return "";
+}
+
+function setActiveTab(tabName){
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tabName));
+  el("tab-logbook").style.display = tabName === "logbook" ? "" : "none";
+  el("tab-reports").style.display = tabName === "reports" ? "" : "none";
+  el("tab-incidents").style.display = tabName === "incidents" ? "" : "none";
+}
+
+function applyFilters() {
+  const dept = el("dept").value.trim().toLowerCase();
+  const fac = el("faculty").value.trim().toLowerCase();
+  const from = el("fromDate").value ? new Date(el("fromDate").value) : null;
+  const to = el("toDate").value ? new Date(el("toDate").value) : null;
+  const toEnd = to ? new Date(to.getTime() + 24*60*60*1000 - 1) : null;
+
+  viewRows = allRows.filter(r => {
+    const rDept = getField(r, "Department").trim().toLowerCase();
+    const rFac  = getField(r, "FacultyName", "FACULTY NAME", "Faculty Name").trim().toLowerCase();
+    const d = parseTimestamp(getField(r, "Timestamp"));
+
+    if (dept && rDept !== dept) return false;
+    if (fac && !rFac.includes(fac)) return false;
+
+    if (from && d && d < from) return false;
+    if (toEnd && d && d > toEnd) return false;
+
+    return true;
+  });
+
+  renderAll();
+}
+
+function renderTable(tableEl, rows) {
+  const thead = tableEl.querySelector("thead");
+  const tbody = tableEl.querySelector("tbody");
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+
+  const cols = headers.length ? headers : Object.keys(rows[0] || {});
+  const trh = document.createElement("tr");
+  cols.forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    cols.forEach(h => {
+      const td = document.createElement("td");
+      td.textContent = r[h] ?? "";
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+function kpisFor(rows){
+  const total = rows.length;
+  const incidents = rows.filter(r => normalizeYes(getField(r, "Incident", "Incident?"))).length;
+  const groupsSum = rows.reduce((acc, r) => {
+    const v = Number(getField(r, "GroupsRequested", "Number of Groups Requested"));
+    return acc + (isFinite(v) ? v : 0);
+  }, 0);
+
+  const cahp = rows.filter(r => getField(r,"Department").trim().toUpperCase() === "CAHP").length;
+  const cnam = rows.filter(r => getField(r,"Department").trim().toUpperCase() === "CNAM").length;
+
+  return { total, incidents, groupsSum, cahp, cnam };
+}
+
+function renderKpis(rows){
+  const { total, incidents, groupsSum, cahp, cnam } = kpisFor(rows);
+  el("kpiRecords").textContent = total;
+  el("kpiIncidents").textContent = incidents;
+  el("kpiGroups").textContent = groupsSum;
+  el("kpiDeptSplit").textContent = `CAHP ${cahp} • CNAM ${cnam}`;
+}
+
+function renderAll(){
+  el("exportBtn").disabled = viewRows.length === 0;
+  el("resetBtn").disabled = allRows.length === 0;
+
+  renderKpis(viewRows);
+
+  el("logbookHint").textContent =
+    allRows.length ? `Showing ${viewRows.length} record(s). Use filters above.` : "Load data to see records.";
+
+  renderTable(el("table"), viewRows);
+
+  // Incidents tab table (filtered view)
+  const onlyInc = viewRows.filter(r => normalizeYes(getField(r, "Incident", "Incident?")));
+  renderTable(el("incTable"), onlyInc);
+}
+
+function exportCSV(rows) {
+  const cols = headers.length ? headers : Object.keys(rows[0] || {});
+  const out = [cols];
+  rows.forEach(obj => out.push(cols.map(h => obj[h] ?? "")));
+
+  const csv = out.map(r => r.map(cell => {
+    const s = String(cell ?? "");
+    if (s.includes('"') || s.includes(",") || s.includes("\n")) return `"${s.replaceAll('"','""')}"`;
+    return s;
+  }).join(",")).join("\n");
+
+  const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "gsc_borrower_export.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetFilters(){
+  el("dept").value = "";
+  el("faculty").value = "";
+  el("fromDate").value = "";
+  el("toDate").value = "";
+  viewRows = [...allRows];
+  renderAll();
+}
+
+function reportRange(period, monthValue){
+  // monthValue like "2026-01"
+  const now = new Date();
+  let year = now.getFullYear();
+  let month = now.getMonth(); // 0-based
+
+  if (monthValue) {
+    const [y, m] = monthValue.split("-").map(Number);
+    if (isFinite(y) && isFinite(m)) { year = y; month = m - 1; }
+  }
+
+  let start, end;
+
+  if (period === "monthly") {
+    start = new Date(year, month, 1);
+    end = new Date(year, month + 1, 0, 23, 59, 59, 999);
+  } else if (period === "quarterly") {
+    const qStartMonth = Math.floor(month / 3) * 3;
+    start = new Date(year, qStartMonth, 1);
+    end = new Date(year, qStartMonth + 3, 0, 23, 59, 59, 999);
+  } else if (period === "semiannual") {
+    const halfStart = (month < 6) ? 0 : 6;
+    start = new Date(year, halfStart, 1);
+    end = new Date(year, halfStart + 6, 0, 23, 59, 59, 999);
+  } else { // annual
+    start = new Date(year, 0, 1);
+    end = new Date(year, 12, 0, 23, 59, 59, 999);
+  }
+
+  return { start, end, year, month };
+}
+
+function runReport(){
+  const period = el("period").value;
+  const monthValue = el("monthPick").value;
+
+  const { start, end, year, month } = reportRange(period, monthValue);
+
+  // Apply report on CURRENT FILTERED view (dept/fac filters), but override date range to report range.
+  const dept = el("dept").value.trim().toLowerCase();
+  const fac = el("faculty").value.trim().toLowerCase();
+
+  const reportRows = allRows.filter(r => {
+    const rDept = getField(r, "Department").trim().toLowerCase();
+    const rFac  = getField(r, "FacultyName", "FACULTY NAME", "Faculty Name").trim().toLowerCase();
+    const d = parseTimestamp(getField(r, "Timestamp"));
+    if (!d) return false;
+
+    if (dept && rDept !== dept) return false;
+    if (fac && !rFac.includes(fac)) return false;
+
+    return d >= start && d <= end;
+  });
+
+  // KPIs
+  const { total, incidents, groupsSum } = kpisFor(reportRows);
+
+  // Equipment/Consumables "presence" count (since items are typed as text)
+  const eqCount = reportRows.filter(r => String(getField(r,"EquipmentBorrowed")).trim() !== "").length;
+  const conCount = reportRows.filter(r => String(getField(r,"ConsumablesBorrowed")).trim() !== "").length;
+
+  el("rRecords").textContent = total;
+  el("rIncidents").textContent = incidents;
+  el("rGroups").textContent = groupsSum;
+  el("rEqCon").textContent = `${eqCount} / ${conCount}`;
+
+  const facLabel = el("faculty").value.trim() ? ` • Faculty: ${el("faculty").value.trim()}` : "";
+  const deptLabel = el("dept").value ? ` • Dept: ${el("dept").value}` : "";
+  const rangeLabel = `${start.toLocaleDateString()} – ${end.toLocaleDateString()}`;
+
+  el("reportTitle").innerHTML = `<b>${period.toUpperCase()}</b> report${deptLabel}${facLabel}<br><span class="muted">${rangeLabel}</span>`;
+
+  // Incident list
+  const incRows = reportRows
+    .filter(r => normalizeYes(getField(r,"Incident","Incident?")))
+    .map(r => {
+      const ts = getField(r,"Timestamp");
+      const f = getField(r,"FacultyName","Faculty Name","FACULTY NAME");
+      const d = getField(r,"Department");
+      const det = getField(r,"IncidentDetails");
+      return `• ${ts} — ${d} — ${f}${det ? " — " + det : ""}`;
+    });
+
+  el("incidentList").textContent = incRows.length ? incRows.join("\n") : "No incidents in this report range.";
+}
+
+async function loadData(){
+  if (!CSV_URL || CSV_URL.includes("PASTE_YOUR_CSV_URL_HERE")) {
+    alert("Please set your CSV_URL inside index.html first.");
+    return;
+  }
+  const btn = el("loadBtn");
+  btn.disabled = true;
+  btn.textContent = "Loading...";
+  try{
+    const res = await fetch(CSV_URL, { cache:"no-store" });
+    if (!res.ok) throw new Error("Failed to load CSV. Check if the sheet is published.");
+    const text = await res.text();
+    const parsed = parseCSV(text);
+    allRows = rowsToObjects(parsed);
+    viewRows = [...allRows];
+    renderAll();
+  }catch(err){
+    alert(String(err));
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Load / Refresh Data";
+  }
+}
+
+/** Events */
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+});
+
+el("loadBtn").addEventListener("click", loadData);
+el("applyBtn").addEventListener("click", applyFilters);
+el("exportBtn").addEventListener("click", () => exportCSV(viewRows));
+el("resetBtn").addEventListener("click", resetFilters);
+
+el("runReportBtn").addEventListener("click", () => {
+  setActiveTab("reports");
+  runReport();
+});
+el("printBtn").addEventListener("click", () => window.print());
+
+/** Optional: load automatically on open */
+loadData();
+</script>
 </body>
 </html>
