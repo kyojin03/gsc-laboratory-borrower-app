@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GSC Laboratory Borrower Slip</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div>
+      <div class="title">Laboratory Borrower Slip</div>
+      <div class="subtitle">Good Samaritan Colleges</div>
+    </div>
+    <span class="badge">GSC • Blue & White</span>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Data Source</h2>
+      <p class="muted">Paste your CSV link below (the one ending in <b>pub?output=csv</b>), then click Load.</p>
+
+      <div class="row">
+        <input id="csvUrl" class="input" placeholder="https://docs.google.com/spreadsheets/.../pub?output=csv" />
+        <button id="loadBtn" class="btn-primary">Load</button>
+      </div>
+
+      <div class="row">
+        <label class="muted">Department</label>
+        <select id="dept" class="input">
+          <option value="">All</option>
+          <option value="CAHP">CAHP</option>
+          <option value="CNAM">CNAM</option>
+        </select>
+
+        <label class="muted">Faculty</label>
+        <input id="faculty" class="input" placeholder="Type faculty name (optional)" />
+      </div>
+
+      <div class="row">
+        <label class="muted">From</label>
+        <input id="fromDate" class="input" type="date" />
+        <label class="muted">To</label>
+        <input id="toDate" class="input" type="date" />
+        <button id="applyBtn" class="btn-primary">Apply Filters</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Summary</h2>
+      <div id="summary" class="muted">Load data to see summary.</div>
+    </section>
+
+    <section class="card">
+      <h2>Records</h2>
+      <div class="row">
+        <button id="exportBtn" class="btn-primary">Export Filtered CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table id="table">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">Developed by Piolo Bernardino — Laboratory Custodian</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
