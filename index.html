@@ -309,7 +309,9 @@
 
       <div class="field">
         <label>Faculty (optional)</label>
-        <input id="faculty" placeholder="Type faculty name (partial ok)" />
+        <input id="faculty" placeholder="Type faculty name (partial ok)" list="facultyList" />
+        <datalist id="facultyList"></datalist>
+
       </div>
 
       <div class="field">
@@ -416,6 +418,8 @@
     </div>
 
     <div style="margin-top:12px;" id="reportTitle" class="muted"></div>
+    <div id="reportFacultyPrint" style="margin-top:6px; font-weight:1000;"></div>
+
 
     <div class="kpis" style="margin-top:10px;">
       <div class="kpi">
@@ -510,6 +514,68 @@
 
 <script>
 window.addEventListener("DOMContentLoaded", () => {
+  function normalizeName(s){
+  return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function getUniqueFacultyNames(rows){
+  const set = new Set();
+  for (const r of rows){
+    const full = String(getField(r, "FacultyName", "FACULTY NAME", "Faculty Name") || "").trim();
+    if (full) set.add(full);
+  }
+  return [...set].sort((a,b) => a.localeCompare(b));
+}
+
+function populateFacultyDatalist(){
+  const dl = el("facultyList");
+  if (!dl) return;
+
+  dl.innerHTML = "";
+  const names = getUniqueFacultyNames(allRows);
+
+  names.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    dl.appendChild(opt);
+  });
+}
+
+function getBestFacultyFullName(query, rows){
+  const q = normalizeName(query);
+  if (!q) return "";
+
+  const counts = new Map(); // fullName -> count
+  for (const r of rows){
+    const full = String(getField(r, "FacultyName", "FACULTY NAME", "Faculty Name") || "").trim();
+    if (!full) continue;
+
+    const fullNorm = normalizeName(full);
+    if (fullNorm.includes(q)){
+      counts.set(full, (counts.get(full) || 0) + 1);
+    }
+  }
+
+  if (!counts.size) return "";
+
+  // Most frequent; tie-breaker: longest name (usually the complete one)
+  const sorted = [...counts.entries()].sort((a,b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return b[0].length - a[0].length;
+  });
+
+  return sorted[0][0];
+}
+
+function updateReportFacultyLine(){
+  const q = el("faculty").value.trim();
+  const best = getBestFacultyFullName(q, (viewRows && viewRows.length) ? viewRows : allRows);
+
+  el("reportFacultyPrint").textContent = q
+    ? `Faculty: ${best || q}`
+    : "";
+}
+
   /** ✅ Set your Google Sheet CSV link here (must end with pub?output=csv) */
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStDm_fif_7EAGcuDY1tEhTjFgNoV3G1uZEXWB_eQkwNmprD9BYCWbugmCITEqviHPvNMYbXj7iIc4I/pub?output=csv";
 
@@ -932,6 +998,8 @@ window.addEventListener("DOMContentLoaded", () => {
       allRows = rowsToObjects(parsed);
       viewRows = [...allRows];
       renderAll();
+      populateFacultyDatalist();   // ← ADD THIS
+      updateReportFacultyLine();
       toast("Data loaded.");
     }catch(err){
       alert(String(err));
@@ -1074,8 +1142,11 @@ window.addEventListener("DOMContentLoaded", () => {
     const { from, to, label } = reportRangeFromUI();
     const base = [...viewRows];
     const reportRows = rowsInRange(base, from, to);
+    updateReportFacultyLine();
+
 
     el("reportTitle").textContent = `Report: ${label} • Records: ${reportRows.length}`;
+      updateReportFacultyLine();
 
     const incidents = reportRows.filter(r => normalizeYes(getField(r, "Incident", "Incident?")));
     const groupsSum = reportRows.reduce((acc, r) => {
@@ -1125,6 +1196,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // Buttons
   el("loadBtn").addEventListener("click", loadData);
   el("applyBtn").addEventListener("click", applyFilters);
+  el("faculty").addEventListener("input", updateReportFacultyLine);
   el("exportBtn").addEventListener("click", () => exportCSV(viewRows));
   el("resetBtn").addEventListener("click", resetFilters);
   el("fIncident").addEventListener("change", setIncidentUI);
