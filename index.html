@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>GSC Laboratory Borrower Slip</title>
-
   <style>
     :root{
       --gsc-blue:#0B3D91;
@@ -16,250 +15,117 @@
       --border:#E2E8F0;
       --danger:#B91C1C;
       --ok:#065F46;
-      --warn:#B45309;
-
-      --shadow: 0 2px 12px rgba(2,6,23,0.06);
-      --shadow-2: 0 18px 55px rgba(2,6,23,0.20);
-      --radius: 14px;
     }
     *{ box-sizing:border-box; }
-    html, body{ height:100%; }
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:var(--bg-soft);
       color:var(--text);
     }
-
     header{
-      background:linear-gradient(135deg, var(--gsc-blue), #0A2F6B);
+      background:var(--gsc-blue);
       color:#fff;
       padding:16px 18px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      position:sticky;
-      top:0;
-      z-index:10;
-      box-shadow: 0 10px 28px rgba(2,6,23,0.15);
     }
-    .brand{
-      display:flex; gap:12px; align-items:center;
-      min-width: 240px;
-    }
-    .logo{
-      width:40px; height:40px; border-radius:12px;
-      background:rgba(255,255,255,0.16);
-      display:grid; place-items:center;
-      font-weight:1000;
-      letter-spacing:0.5px;
-      border:1px solid rgba(255,255,255,0.18);
-    }
-    .brand .title{ font-size:18px; font-weight:1000; letter-spacing:0.2px; line-height:1.1; }
-    .brand .sub{ font-size:12px; opacity:0.9; margin-top:3px; }
-    .header-right{
-      display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;
-    }
+    .brand .title{ font-size:18px; font-weight:900; letter-spacing:0.2px; }
+    .brand .sub{ font-size:12px; opacity:0.9; margin-top:2px; }
     .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:7px 10px;
+      display:inline-block;
+      padding:6px 10px;
       border-radius:999px;
       font-size:12px;
-      font-weight:900;
-      background:rgba(255,255,255,0.14);
-      border:1px solid rgba(255,255,255,0.16);
+      font-weight:800;
+      background:rgba(255,255,255,0.16);
       white-space:nowrap;
-      backdrop-filter: blur(8px);
-    }
-    .dot{
-      width:8px; height:8px; border-radius:99px;
-      background:#22C55E;
-      box-shadow: 0 0 0 4px rgba(34,197,94,0.16);
-    }
-    .dot.offline{
-      background:#F97316;
-      box-shadow: 0 0 0 4px rgba(249,115,22,0.16);
     }
 
-    .wrap{
-      max-width:1180px;
-      margin:16px auto 90px;
-      padding:0 14px;
-      display:grid;
-      gap:12px;
-    }
+    .wrap{ max-width:1100px; margin:16px auto 90px; padding:0 14px; display:grid; gap:12px; }
     .tabs{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      padding:8px;
-      box-shadow: var(--shadow);
+      display:flex; gap:8px; flex-wrap:wrap;
+      background:var(--card); border:1px solid var(--border); border-radius:14px; padding:8px;
+      box-shadow: 0 2px 10px rgba(2,6,23,0.05);
     }
     .tab{
       border:none; cursor:pointer;
-      padding:10px 12px;
-      border-radius:12px;
-      font-weight:1000;
-      font-size:13px;
+      padding:10px 12px; border-radius:12px;
+      font-weight:900; font-size:13px;
       color:var(--gsc-blue);
       background:transparent;
-      transition: transform 0.05s ease, background 0.15s ease;
     }
-    .tab:hover{ background: rgba(37,99,235,0.07); }
-    .tab:active{ transform: translateY(1px); }
     .tab.active{
-      background:rgba(37,99,235,0.12);
+      background:rgba(37,99,235,0.10);
       color:var(--gsc-blue);
     }
 
     .card{
       background:var(--card);
       border:1px solid var(--border);
-      border-radius:var(--radius);
+      border-radius:14px;
       padding:14px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 2px 10px rgba(2,6,23,0.05);
     }
-    h3{ margin:0 0 8px; }
-    .muted{ color:var(--muted); font-size:13px; }
-    .note{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:8px;
-      line-height:1.4;
-    }
-
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:flex-end;
-      flex-wrap:wrap;
-    }
-    label{ font-size:12px; color:var(--muted); font-weight:900; }
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      flex: 1 1 220px;
-      min-width: 160px;
-    }
+    .row{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+    label{ font-size:12px; color:var(--muted); font-weight:800; }
+    .field{ display:flex; flex-direction:column; gap:6px; flex: 1 1 220px; }
     input, select, textarea{
-      padding:10px 12px;
-      border-radius:12px;
+      padding:10px 12px; border-radius:12px;
       border:1px solid var(--border);
       background:#fff;
       outline:none;
       width:100%;
-      font: inherit;
     }
     textarea{ min-height: 80px; resize: vertical; }
     input:focus, select:focus, textarea:focus{
       border-color:var(--gsc-blue-2);
       box-shadow:0 0 0 3px rgba(37,99,235,0.15);
     }
-
     .btn{
       border:none; cursor:pointer;
-      padding:10px 14px;
-      border-radius:12px;
-      font-weight:1000;
+      padding:10px 14px; border-radius:12px;
+      font-weight:900;
       background:var(--gsc-blue-2);
       color:#fff;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      transition: transform 0.05s ease, filter 0.15s ease;
     }
-    .btn:hover{ filter:brightness(0.97); }
-    .btn:active{ transform: translateY(1px); }
+    .btn:hover{ filter:brightness(0.96); }
     .btn.secondary{ background:#fff; color:var(--gsc-blue); border:1px solid var(--border); }
     .btn.danger{ background:var(--danger); }
-    .btn:disabled{ opacity:0.6; cursor:not-allowed; transform:none; }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed; }
 
-    .statusline{
-      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px dashed var(--border);
-      background: #FBFCFF;
-    }
-    .mini{
-      display:inline-flex; align-items:center; gap:8px;
-      font-size:12px; font-weight:900; color:var(--muted);
-    }
-    .mini b{ color: var(--text); }
-
-    .kpis{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:10px;
-    }
+    .kpis{ display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:10px; }
     @media (max-width: 900px){ .kpis{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     .kpi{
       border:1px solid var(--border);
-      border-radius:var(--radius);
+      border-radius:14px;
       padding:12px;
       background:#fff;
     }
-    .kpi .label{ font-size:12px; color:var(--muted); font-weight:1000; }
+    .kpi .label{ font-size:12px; color:var(--muted); font-weight:900; }
     .kpi .val{ margin-top:6px; font-size:20px; font-weight:1000; color:var(--text); }
     .kpi .hint{ margin-top:4px; font-size:12px; color:var(--muted); }
 
-    .table-wrap{
-      overflow:auto;
-      border-radius:var(--radius);
-      border:1px solid var(--border);
-      background:#fff;
-    }
-    table{ width:100%; border-collapse:separate; border-spacing:0; min-width: 920px; }
-    th, td{
-      padding:10px;
-      border-bottom:1px solid var(--border);
-      text-align:left;
-      font-size:13px;
-      vertical-align: top;
-    }
-    th{
-      background:rgba(11,61,145,0.08);
-      font-weight:1000;
-      position:sticky;
-      top:0;
-      z-index:1;
-      backdrop-filter: blur(6px);
-    }
+    .table-wrap{ overflow:auto; border-radius:14px; border:1px solid var(--border); background:#fff; }
+    table{ width:100%; border-collapse:collapse; }
+    th, td{ padding:10px; border-bottom:1px solid var(--border); text-align:left; font-size:13px; }
+    th{ background:rgba(11,61,145,0.08); font-weight:1000; }
     tr:nth-child(even) td{ background:#FAFBFF; }
-    tr.clickable:hover td{ background: rgba(37,99,235,0.06); cursor:pointer; }
-    .cell-pre{ white-space:pre-wrap; line-height:1.35; }
-    .nowrap{ white-space:nowrap; }
 
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:4px 9px;
+    .muted{ color:var(--muted); font-size:13px; }
+    .note{ font-size:12px; color:var(--muted); margin-top:8px; }
+    .ok{ color: var(--ok); font-weight: 900; }
+    .err{ color: var(--danger); font-weight: 900; }
+
+    footer{
+      position:fixed; right:14px; bottom:10px;
+      color:var(--muted); font-size:12px;
+      background:rgba(245,247,255,0.9);
+      padding:6px 10px; border:1px solid var(--border);
       border-radius:999px;
-      font-weight:1000;
-      font-size:12px;
-      border:1px solid var(--border);
-      background:#fff;
-    }
-    .badge.cahp{ border-color: rgba(37,99,235,0.35); background: rgba(37,99,235,0.08); color: var(--gsc-blue); }
-    .badge.cnam{ border-color: rgba(11,61,145,0.35); background: rgba(11,61,145,0.08); color: #0A2F6B; }
-    .badge.incident{
-      border-color: rgba(185,28,28,0.35);
-      background: rgba(185,28,28,0.08);
-      color: var(--danger);
-    }
-    .badge.ok{
-      border-color: rgba(6,95,70,0.35);
-      background: rgba(6,95,70,0.08);
-      color: var(--ok);
+      backdrop-filter: blur(6px);
     }
 
     .toast{
@@ -271,155 +137,19 @@
       color: #fff;
       padding: 10px 14px;
       border-radius: 999px;
-      font-weight: 1000;
+      font-weight: 900;
       font-size: 13px;
       display: none;
       z-index: 9999;
       box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      max-width: min(900px, calc(100vw - 24px));
-      text-align:center;
     }
-    .toast.ok{ background: #0f172a; }
-    .toast.warn{ background: #7c2d12; }
-    .toast.err{ background: #7f1d1d; }
-
-    .spinner{
-      width:14px; height:14px;
-      border-radius:99px;
-      border:2px solid rgba(255,255,255,0.4);
-      border-top-color:#fff;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin{ to{ transform: rotate(360deg); } }
-
-    footer{
-      position:fixed;
-      right:14px;
-      bottom:10px;
-      color:var(--muted);
-      font-size:12px;
-      background:rgba(245,247,255,0.92);
-      padding:6px 10px;
-      border:1px solid var(--border);
-      border-radius:999px;
-      backdrop-filter: blur(6px);
-      box-shadow: var(--shadow);
-    }
-
-    /* Modal */
-    .modal{
-      position:fixed;
-      inset:0;
-      display:none;
-      z-index:9998;
-    }
-    .modal.show{ display:block; }
-    .modal-backdrop{
-      position:absolute; inset:0;
-      background: rgba(2,6,23,0.55);
-    }
-    .modal-card{
-      position:relative;
-      max-width: 880px;
-      margin: 5vh auto;
-      background:#fff;
-      border-radius: 16px;
-      border:1px solid var(--border);
-      box-shadow: var(--shadow-2);
-      overflow:hidden;
-      width: calc(100vw - 24px);
-    }
-    .modal-head{
-      display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
-      padding:14px 14px 10px;
-      border-bottom:1px solid var(--border);
-      background: #FBFCFF;
-    }
-    .modal-title{ font-weight:1000; font-size:16px; }
-    .modal-sub{ font-size:12px; color:var(--muted); margin-top:3px; }
-    .icon-btn{
-      border:1px solid var(--border);
-      background:#fff;
-      cursor:pointer;
-      border-radius:12px;
-      padding:8px 10px;
-      font-weight:1000;
-    }
-    .modal-body{
-      padding:14px;
-      display:grid;
-      gap:10px;
-    }
-    .kv{
-      display:grid;
-      grid-template-columns: 180px 1fr;
-      gap:10px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:10px 12px;
-      background:#fff;
-    }
-    @media (max-width: 650px){
-      .kv{ grid-template-columns: 1fr; }
-    }
-    .kv .k{ font-size:12px; font-weight:1000; color:var(--muted); }
-    .kv .v{ font-size:13px; font-weight:700; color:var(--text); white-space:pre-wrap; line-height:1.35; }
-
-    .modal-foot{
-      padding:12px 14px;
-      border-top:1px solid var(--border);
-      display:flex;
-      gap:10px;
-      justify-content:flex-end;
-      background:#FBFCFF;
-    }
-
-    /* Charts */
-    .grid-2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    @media (max-width: 900px){ .grid-2{ grid-template-columns: 1fr; } }
-    .chart-card{
-      border:1px solid var(--border);
-      border-radius: var(--radius);
-      padding:12px;
-      background:#fff;
-      box-shadow: var(--shadow);
-    }
-    .chart-top{
-      display:flex; align-items:flex-end; justify-content:space-between; gap:10px; flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .chart-title{ font-weight:1000; }
-    canvas{ width:100%; height:auto; display:block; border-radius:12px; border:1px solid var(--border); }
-
-    .mini-table{
-      width:100%;
-      border-collapse:collapse;
-      margin-top:10px;
-      min-width: 0;
-    }
-    .mini-table th, .mini-table td{
-      border-bottom:1px solid var(--border);
-      padding:8px 10px;
-      font-size:12.5px;
-      text-align:left;
-    }
-    .mini-table th{
-      background: rgba(11,61,145,0.06);
-      position:static;
-    }
-    .right{ text-align:right; }
 
     /* Print */
     @media print{
-      header, .tabs, .no-print, footer, .toast, .modal{ display:none !important; }
+      header, .tabs, .no-print, footer, .toast{ display:none !important; }
       body{ background:#fff; }
       .wrap{ margin:0; }
       .card{ box-shadow:none; }
-      table{ min-width: 0; }
     }
   </style>
 </head>
@@ -427,21 +157,13 @@
 <body>
 <header>
   <div class="brand">
-    <div class="logo">GSC</div>
-    <div>
-      <div class="title">Laboratory Borrower Slip</div>
-      <div class="sub">Good Samaritan Colleges • CAHP / CNAM</div>
-    </div>
+    <div class="title">Laboratory Borrower Slip</div>
+    <div class="sub">Good Samaritan Colleges • CAHP / CNAM</div>
   </div>
-
-  <div class="header-right">
-    <span class="pill" id="netPill"><span class="dot" id="netDot"></span><span id="netText">Online</span></span>
-    <span class="pill"><b id="hdrCount">—</b>&nbsp;records</span>
-    <span class="pill">Last sync: <b id="hdrSync">—</b></span>
-  </div>
+  <span class="pill">GSC • Blue &amp; White</span>
 </header>
 
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="toast" id="toast"></div>
 
 <main class="wrap">
 
@@ -454,16 +176,12 @@
 
   <!-- LOG TAB -->
   <section class="card" id="tab-log">
-    <h3>Log Borrower Slip</h3>
-    <div class="muted">
-      Logs directly into your Google Form (no Apps Script). Timestamp is automatic.
-      <br>
-      <b>Note:</b> Logbook/Reports may take <b>1–3 minutes</b> to reflect new entries due to Google “Published CSV” caching.
-    </div>
+    <h3 style="margin:0 0 10px;">Log Borrower Slip</h3>
+    <div class="muted">This logs directly into your Google Form (no Apps Script). Timestamp is automatic.</div>
 
     <div class="row" style="margin-top:12px;">
       <div class="field">
-        <label>Department <span class="muted">(required)</span></label>
+        <label>Department</label>
         <select id="fDept">
           <option value="CAHP">CAHP</option>
           <option value="CNAM">CNAM</option>
@@ -471,24 +189,24 @@
       </div>
 
       <div class="field">
-        <label>Faculty Name <span class="muted">(required)</span></label>
-        <input id="fFaculty" placeholder="e.g., Juan Dela Cruz" autocomplete="name" />
+        <label>Faculty Name</label>
+        <input id="fFaculty" placeholder="e.g., Juan Dela Cruz" />
       </div>
 
       <div class="field">
-        <label>Number of Groups Requested <span class="muted">(optional)</span></label>
-        <input id="fGroups" type="number" min="1" placeholder="e.g., 5" inputmode="numeric" />
+        <label>Number of Groups Requested (optional)</label>
+        <input id="fGroups" type="number" min="1" placeholder="e.g., 5" />
       </div>
     </div>
 
     <div class="row" style="margin-top:10px;">
       <div class="field">
-        <label>Equipment Borrowed <span class="muted">(optional)</span></label>
+        <label>Equipment Borrowed (optional)</label>
         <textarea id="fEquip" placeholder="Example: Test tube - 10; Beaker - 2"></textarea>
       </div>
 
       <div class="field">
-        <label>Consumables Borrowed <span class="muted">(optional)</span></label>
+        <label>Consumables Borrowed (optional)</label>
         <textarea id="fCons" placeholder="Example: Gloves - 1 box; Alcohol - 500 mL"></textarea>
       </div>
     </div>
@@ -503,7 +221,7 @@
       </div>
 
       <div class="field" id="incidentDetailsWrap" style="display:none;">
-        <label>Incident Details <span class="muted">(required if yes)</span></label>
+        <label>Incident Details (required if yes)</label>
         <input id="fIncidentDetails" placeholder="Describe the incident..." />
       </div>
     </div>
@@ -514,10 +232,8 @@
       <div class="muted" id="logStatus" style="align-self:center;"></div>
     </div>
 
-    <div class="statusline">
-      <span class="mini">Rule: <b>Faculty Name</b> required</span>
-      <span class="mini">Rule: Fill <b>Equipment</b> or <b>Consumables</b> (at least one)</span>
-      <span class="mini">Rule: If Incident = yes, <b>Incident Details</b> required</span>
+    <div class="note">
+      Tip: You can leave Equipment empty and fill Consumables only (or vice versa). But at least one should be filled.
     </div>
 
     <!-- Hidden iframe target to submit Google Form without leaving page -->
@@ -527,10 +243,9 @@
   <!-- Top controls for logbook/reports/incidents -->
   <section class="card no-print" id="dataControls">
     <div class="row">
-      <button id="loadBtn" class="btn"><span id="loadSpin" style="display:none;" class="spinner"></span>Load / Refresh Data</button>
+      <button id="loadBtn" class="btn">Load / Refresh Data</button>
       <button id="exportBtn" class="btn secondary" disabled>Export Current View (CSV)</button>
       <button id="resetBtn" class="btn secondary" disabled>Reset Filters</button>
-      <div class="muted" id="dataMsg" style="align-self:center;"></div>
     </div>
 
     <div class="row" style="margin-top:12px;">
@@ -549,11 +264,6 @@
       </div>
 
       <div class="field">
-        <label>Search (equipment/consumables/incidents)</label>
-        <input id="q" placeholder="e.g., beaker / gloves / broken / alcohol" />
-      </div>
-
-      <div class="field">
         <label>From</label>
         <input id="fromDate" type="date" />
       </div>
@@ -564,10 +274,6 @@
       </div>
 
       <button id="applyBtn" class="btn">Apply Filters</button>
-    </div>
-
-    <div class="note">
-      This app reads from your Google Sheet <b>Published CSV</b>. If you just submitted a slip and it’s not visible yet, wait 1–3 minutes and refresh.
     </div>
   </section>
 
@@ -599,7 +305,7 @@
 
   <!-- LOGBOOK TAB -->
   <section class="card" id="tab-logbook" style="display:none;">
-    <h3>Logbook</h3>
+    <h3 style="margin:0 0 10px;">Logbook</h3>
     <div class="muted" id="logbookHint">Load data to see records.</div>
 
     <div class="table-wrap" style="margin-top:10px;">
@@ -608,15 +314,11 @@
         <tbody></tbody>
       </table>
     </div>
-
-    <div class="note">
-      Tip: Click a row to open a professional record view (with Print).
-    </div>
   </section>
 
   <!-- REPORTS TAB -->
   <section class="card" id="tab-reports" style="display:none;">
-    <h3>Reports</h3>
+    <h3 style="margin:0 0 10px;">Reports</h3>
 
     <div class="row no-print">
       <div class="field">
@@ -634,29 +336,12 @@
         <input id="monthPick" type="month" />
       </div>
 
-      <div class="field">
-        <label>Usage Metric</label>
-        <select id="metric">
-          <option value="mentions">Mentions (how many logs)</option>
-          <option value="quantity">Quantity (sum if provided)</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Top N</label>
-        <select id="topN">
-          <option value="5">Top 5</option>
-          <option value="10" selected>Top 10</option>
-          <option value="15">Top 15</option>
-        </select>
-      </div>
-
       <button id="runReportBtn" class="btn">Run Report</button>
       <button id="printBtn" class="btn secondary">Print Report</button>
     </div>
 
     <div class="note no-print">
-      Reports use the <b>Department / Faculty / Search</b> filters above (but the date range is defined by the selected report period).
+      Tip: Use <b>Department</b> and/or <b>Faculty</b> filters above to extract ALL or specific faculty.
     </div>
 
     <div style="margin-top:12px;" id="reportTitle" class="muted"></div>
@@ -684,46 +369,6 @@
       </div>
     </div>
 
-    <div class="grid-2" style="margin-top:12px;">
-      <div class="chart-card">
-        <div class="chart-top">
-          <div class="chart-title">Most Used Equipment</div>
-          <div class="muted" id="eqMeta">—</div>
-        </div>
-        <canvas id="eqChart"></canvas>
-
-        <table class="mini-table" id="eqTable" aria-label="Top equipment table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th class="right">Mentions</th>
-              <th class="right">Quantity</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <div class="chart-card">
-        <div class="chart-top">
-          <div class="chart-title">Most Used Consumables</div>
-          <div class="muted" id="conMeta">—</div>
-        </div>
-        <canvas id="conChart"></canvas>
-
-        <table class="mini-table" id="conTable" aria-label="Top consumables table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th class="right">Mentions</th>
-              <th class="right">Quantity</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
     <div class="card" style="margin-top:12px; border-style:dashed;">
       <div style="font-weight:1000;">Incidents (within report)</div>
       <pre class="muted" id="incidentList" style="white-space:pre-wrap; margin:8px 0 0;">—</pre>
@@ -732,8 +377,8 @@
 
   <!-- INCIDENTS TAB -->
   <section class="card" id="tab-incidents" style="display:none;">
-    <h3>Incidents</h3>
-    <div class="muted">Shows only rows where <b>Incident = Yes</b> (based on your current filters).</div>
+    <h3 style="margin:0 0 10px;">Incidents</h3>
+    <div class="muted">Shows only rows where <b>Incident = Yes</b>.</div>
 
     <div class="table-wrap" style="margin-top:10px;">
       <table id="incTable">
@@ -741,44 +386,21 @@
         <tbody></tbody>
       </table>
     </div>
-
-    <div class="note">
-      Tip: Click a row to open the record view (with Print).
-    </div>
   </section>
 
 </main>
 
 <footer>Developed by Piolo Bernardino — Laboratory Custodian</footer>
-
-<!-- Record Modal -->
-<div class="modal" id="recordModal" aria-hidden="true">
-  <div class="modal-backdrop" data-close></div>
-  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="modalTitle">Record Details</div>
-        <div class="modal-sub" id="modalSub">—</div>
-      </div>
-      <button class="icon-btn" id="modalX" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body" id="modalBody"></div>
-    <div class="modal-foot no-print">
-      <button class="btn secondary" id="modalPrintBtn">Print Record</button>
-      <button class="btn" id="modalCloseBtn">Close</button>
-    </div>
-  </div>
-</div>
-
 <script>
 window.addEventListener("DOMContentLoaded", () => {
-  /* =========================================================
-     ✅ CONFIG (your existing working links / IDs)
-     ========================================================= */
+  /** ✅ Set your Google Sheet CSV link here (must end with pub?output=csv) */
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStDm_fif_7EAGcuDY1tEhTjFgNoV3G1uZEXWB_eQkwNmprD9BYCWbugmCITEqviHPvNMYbXj7iIc4I/pub?output=csv";
+
+  /** ✅ Your Google Form backend */
   const FORM_ID = "1FAIpQLSfUct13cYyqYuLEDSUoo-CAcl77faei_jwSCrsryzp_7T_x4A";
   const FORM_POST_URL = "https://docs.google.com/forms/d/e/" + FORM_ID + "/formResponse";
 
+  /** Entry IDs from your prefilled link */
   const ENTRY = {
     Department: "entry.2142992831",
     FacultyName: "entry.376247451",
@@ -789,96 +411,33 @@ window.addEventListener("DOMContentLoaded", () => {
     IncidentDetails: "entry.2029578704",
   };
 
-  /* =========================================================
-     State
-     ========================================================= */
-  let rawHeaders = [];
-  let rawRows = [];       // objects with raw sheet headers
-  let allRows = [];       // normalized rows for UI
-  let viewRows = [];      // filtered UI rows
-  let lastSync = null;
-  let submitLock = false;
-  let lastOpenedRow = null;
+  let allRows = [];
+  let viewRows = [];
+  let headers = [];
 
   const el = (id) => document.getElementById(id);
 
-  /* =========================================================
-     UI helpers
-     ========================================================= */
-  function toast(msg, type="ok"){
+  function toast(msg){
     const t = el("toast");
-    t.className = "toast " + type;
     t.textContent = msg;
     t.style.display = "block";
     clearTimeout(window.__toastTimer);
-    window.__toastTimer = setTimeout(() => t.style.display = "none", 2800);
-  }
-
-  function setOnlineUI(){
-    const online = navigator.onLine;
-    el("netDot").classList.toggle("offline", !online);
-    el("netText").textContent = online ? "Online" : "Offline";
-  }
-
-  function fmtDate(d){
-    if (!d) return "—";
-    try{
-      return new Intl.DateTimeFormat(undefined, { year:"numeric", month:"short", day:"2-digit" }).format(d);
-    }catch{
-      return d.toLocaleDateString();
-    }
-  }
-  function fmtTime(d){
-    if (!d) return "";
-    try{
-      return new Intl.DateTimeFormat(undefined, { hour:"2-digit", minute:"2-digit" }).format(d);
-    }catch{
-      return d.toLocaleTimeString();
-    }
-  }
-  function fmtDateTime(d, fallbackStr=""){
-    if (!d) return fallbackStr || "—";
-    return `${fmtDate(d)} ${fmtTime(d)}`.trim();
-  }
-
-  function badgeDept(dept){
-    const v = String(dept||"").toUpperCase().trim();
-    const cls = v === "CNAM" ? "cnam" : "cahp";
-    return `<span class="badge ${cls}">${escapeHtml(v || "—")}</span>`;
-  }
-  function badgeIncident(incident){
-    const yes = normalizeYes(incident);
-    return yes
-      ? `<span class="badge incident">Incident</span>`
-      : `<span class="badge ok">No incident</span>`;
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+    window.__toastTimer = setTimeout(() => t.style.display = "none", 2600);
   }
 
   function setActiveTab(tabName){
     document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tabName));
-    el("tab-log").style.display       = tabName === "log" ? "" : "none";
-    el("tab-logbook").style.display   = tabName === "logbook" ? "" : "none";
-    el("tab-reports").style.display   = tabName === "reports" ? "" : "none";
-    el("tab-incidents").style.display = tabName === "incidents" ? "" : "none";
+    el("tab-log").style.display      = tabName === "log" ? "" : "none";
+    el("tab-logbook").style.display  = tabName === "logbook" ? "" : "none";
+    el("tab-reports").style.display  = tabName === "reports" ? "" : "none";
+    el("tab-incidents").style.display= tabName === "incidents" ? "" : "none";
 
     const showData = (tabName !== "log");
     el("dataControls").style.display = showData ? "" : "none";
     el("kpiCard").style.display = showData ? "" : "none";
   }
 
-  /* =========================================================
-     CSV parsing (robust enough for Google published CSV)
-     ========================================================= */
   function parseCSV(text) {
-    text = String(text || "").replace(/^\uFEFF/, ""); // strip BOM
     const rows = [];
     let row = [];
     let cur = "";
@@ -901,120 +460,67 @@ window.addEventListener("DOMContentLoaded", () => {
       cur += c;
     }
     if (cur.length || row.length) { row.push(cur); rows.push(row); }
-
-    // Remove empty rows
     return rows.filter(r => r.some(cell => String(cell).trim() !== ""));
   }
 
   function rowsToObjects(parsed) {
-    if (!parsed || parsed.length < 1) return { headers: [], objects: [] };
-    const headers = parsed[0].map(h => String(h || "").trim());
-    const objects = parsed.slice(1).map(r => {
+    headers = parsed[0].map(h => String(h || "").trim());
+    return parsed.slice(1).map(r => {
       const obj = {};
       headers.forEach((h, idx) => obj[h] = String(r[idx] ?? "").trim());
       return obj;
     });
-    return { headers, objects };
   }
 
-  function pick(obj, ...keys){
-    for (const k of keys) {
-      if (k in obj) return obj[k];
-    }
+  function parseTimestamp(ts) {
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function normalizeYes(v) {
+    return String(v || "").trim().toLowerCase().startsWith("y");
+  }
+  function getField(obj, ...keys) {
+    for (const k of keys) if (k in obj) return obj[k];
     return "";
   }
 
-  function normalizeYes(v) {
-    const s = String(v || "").trim().toLowerCase();
-    return s === "yes" || s === "y" || s.startsWith("yes");
+  function renderTable(tableEl, rows) {
+    const thead = tableEl.querySelector("thead");
+    const tbody = tableEl.querySelector("tbody");
+    thead.innerHTML = "";
+    tbody.innerHTML = "";
+
+    const cols = headers.length ? headers : Object.keys(rows[0] || {});
+    const trh = document.createElement("tr");
+    cols.forEach(h => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      cols.forEach(h => {
+        const td = document.createElement("td");
+        td.textContent = r[h] ?? "";
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
   }
 
-  /* =========================================================
-     Timestamp parsing (handles common Google Form timestamp styles)
-     ========================================================= */
-  function parseTimestampSmart(ts) {
-    const s = String(ts || "").trim();
-    if (!s) return null;
-
-    // Try native parse first
-    const d0 = new Date(s);
-    if (!isNaN(d0.getTime())) return d0;
-
-    // Try MM/DD/YYYY or DD/MM/YYYY with optional time
-    const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?$/i);
-    if (!m) return null;
-
-    let a = Number(m[1]);
-    let b = Number(m[2]);
-    let y = Number(m[3]);
-    let hh = Number(m[4] || 0);
-    let mm = Number(m[5] || 0);
-    let ss = Number(m[6] || 0);
-    const ampm = String(m[7] || "").toUpperCase();
-
-    if (y < 100) y += 2000;
-    if (ampm) {
-      if (ampm === "PM" && hh < 12) hh += 12;
-      if (ampm === "AM" && hh === 12) hh = 0;
-    }
-
-    const now = new Date();
-    const cand1 = new Date(y, a-1, b, hh, mm, ss); // MM/DD
-    const cand2 = new Date(y, b-1, a, hh, mm, ss); // DD/MM
-
-    const ok1 = !isNaN(cand1.getTime()) && cand1.getFullYear() === y;
-    const ok2 = !isNaN(cand2.getTime()) && cand2.getFullYear() === y;
-
-    if (ok1 && !ok2) return cand1;
-    if (!ok1 && ok2) return cand2;
-    if (!ok1 && !ok2) return null;
-
-    // Both valid: pick the one closer to now (more likely correct for recent logs)
-    const diff1 = Math.abs(cand1.getTime() - now.getTime());
-    const diff2 = Math.abs(cand2.getTime() - now.getTime());
-    return diff1 <= diff2 ? cand1 : cand2;
-  }
-
-  /* =========================================================
-     Normalization for professional UI columns
-     ========================================================= */
-  function normalizeRow(raw){
-    const tsStr = pick(raw, "Timestamp", "timestamp", "Time Stamp", "Date", "DATE");
-    const tsDate = parseTimestampSmart(tsStr);
-
-    const department = pick(raw, "Department", "DEPARTMENT");
-    const faculty = pick(raw, "FacultyName", "FACULTY NAME", "Faculty Name", "Faculty", "Name");
-    const groups = pick(raw, "GroupsRequested", "Number of Groups Requested", "Groups Requested", "Groups", "Group");
-    const equipment = pick(raw, "EquipmentBorrowed", "Equipment Borrowed", "Equipment");
-    const consumables = pick(raw, "ConsumablesBorrowed", "Consumables Borrowed", "Consumables");
-    const incident = pick(raw, "Incident", "Incident?");
-    const incidentDetails = pick(raw, "IncidentDetails", "Incident Details", "INCIDENT DETAILS", "Details");
-
-    return {
-      tsStr, tsDate,
-      department: String(department||"").trim(),
-      faculty: String(faculty||"").trim(),
-      groups: String(groups||"").trim(),
-      equipment: String(equipment||"").trim(),
-      consumables: String(consumables||"").trim(),
-      incident: String(incident||"").trim(),
-      incidentDetails: String(incidentDetails||"").trim(),
-      _raw: raw
-    };
-  }
-
-  /* =========================================================
-     Rendering: KPIs + Tables
-     ========================================================= */
   function kpisFor(rows){
     const total = rows.length;
-    const incidents = rows.filter(r => normalizeYes(r.incident)).length;
+    const incidents = rows.filter(r => normalizeYes(getField(r, "Incident", "Incident?"))).length;
     const groupsSum = rows.reduce((acc, r) => {
-      const v = Number(r.groups);
+      const v = Number(getField(r, "GroupsRequested", "Number of Groups Requested"));
       return acc + (isFinite(v) ? v : 0);
     }, 0);
-    const cahp = rows.filter(r => String(r.department).trim().toUpperCase() === "CAHP").length;
-    const cnam = rows.filter(r => String(r.department).trim().toUpperCase() === "CNAM").length;
+
+    const cahp = rows.filter(r => getField(r,"Department").trim().toUpperCase() === "CAHP").length;
+    const cnam = rows.filter(r => getField(r,"Department").trim().toUpperCase() === "CNAM").length;
+
     return { total, incidents, groupsSum, cahp, cnam };
   }
 
@@ -1024,144 +530,40 @@ window.addEventListener("DOMContentLoaded", () => {
     el("kpiIncidents").textContent = incidents;
     el("kpiGroups").textContent = groupsSum;
     el("kpiDeptSplit").textContent = `CAHP ${cahp} • CNAM ${cnam}`;
-
-    el("hdrCount").textContent = String(rawRows.length || 0);
-    el("hdrSync").textContent = lastSync ? `${fmtDate(lastSync)} ${fmtTime(lastSync)}` : "—";
-  }
-
-  function renderLogbookTable(rows){
-    const table = el("table");
-    const thead = table.querySelector("thead");
-    const tbody = table.querySelector("tbody");
-    thead.innerHTML = "";
-    tbody.innerHTML = "";
-
-    const headRow = document.createElement("tr");
-    const cols = ["#", "Timestamp", "Dept", "Faculty", "Groups", "Equipment", "Consumables", "Incident"];
-    cols.forEach(h => {
-      const th = document.createElement("th");
-      th.textContent = h;
-      headRow.appendChild(th);
-    });
-    thead.appendChild(headRow);
-
-    if (!rows.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = cols.length;
-      td.className = "muted";
-      td.textContent = "No records for this view. Adjust filters or refresh data.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-
-    const frag = document.createDocumentFragment();
-    rows.forEach((r, idx) => {
-      const tr = document.createElement("tr");
-      tr.className = "clickable";
-      tr.addEventListener("click", () => openRecordModal(r));
-
-      tr.innerHTML = `
-        <td class="nowrap">${idx + 1}</td>
-        <td class="nowrap">${escapeHtml(fmtDateTime(r.tsDate, r.tsStr))}</td>
-        <td class="nowrap">${badgeDept(r.department)}</td>
-        <td>${escapeHtml(r.faculty || "—")}</td>
-        <td class="nowrap">${escapeHtml(r.groups || "—")}</td>
-        <td class="cell-pre">${escapeHtml(r.equipment || "—")}</td>
-        <td class="cell-pre">${escapeHtml(r.consumables || "—")}</td>
-        <td class="nowrap">${normalizeYes(r.incident) ? badgeIncident("yes") : `<span class="badge ok">No</span>`}</td>
-      `;
-      frag.appendChild(tr);
-    });
-    tbody.appendChild(frag);
-  }
-
-  function renderIncidentsTable(rows){
-    const onlyInc = rows.filter(r => normalizeYes(r.incident));
-    const table = el("incTable");
-    const thead = table.querySelector("thead");
-    const tbody = table.querySelector("tbody");
-    thead.innerHTML = "";
-    tbody.innerHTML = "";
-
-    const cols = ["#", "Timestamp", "Dept", "Faculty", "Incident Details", "Equipment", "Consumables"];
-    const headRow = document.createElement("tr");
-    cols.forEach(h => {
-      const th = document.createElement("th");
-      th.textContent = h;
-      headRow.appendChild(th);
-    });
-    thead.appendChild(headRow);
-
-    if (!onlyInc.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = cols.length;
-      td.className = "muted";
-      td.textContent = "No incidents found for this view.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-
-    const frag = document.createDocumentFragment();
-    onlyInc.forEach((r, idx) => {
-      const tr = document.createElement("tr");
-      tr.className = "clickable";
-      tr.addEventListener("click", () => openRecordModal(r));
-
-      tr.innerHTML = `
-        <td class="nowrap">${idx + 1}</td>
-        <td class="nowrap">${escapeHtml(fmtDateTime(r.tsDate, r.tsStr))}</td>
-        <td class="nowrap">${badgeDept(r.department)}</td>
-        <td>${escapeHtml(r.faculty || "—")}</td>
-        <td class="cell-pre">${escapeHtml(r.incidentDetails || "—")}</td>
-        <td class="cell-pre">${escapeHtml(r.equipment || "—")}</td>
-        <td class="cell-pre">${escapeHtml(r.consumables || "—")}</td>
-      `;
-      frag.appendChild(tr);
-    });
-    tbody.appendChild(frag);
   }
 
   function renderAll(){
     el("exportBtn").disabled = viewRows.length === 0;
     el("resetBtn").disabled = allRows.length === 0;
 
-    el("logbookHint").textContent =
-      allRows.length ? `Showing ${viewRows.length} record(s). Click a row for details.` : "Load data to see records.";
-
     renderKpis(viewRows);
-    renderLogbookTable(viewRows);
-    renderIncidentsTable(viewRows);
+
+    el("logbookHint").textContent =
+      allRows.length ? `Showing ${viewRows.length} record(s). Use filters above.` : "Load data to see records.";
+
+    renderTable(el("table"), viewRows);
+
+    const onlyInc = viewRows.filter(r => normalizeYes(getField(r, "Incident", "Incident?")));
+    renderTable(el("incTable"), onlyInc);
   }
 
-  /* =========================================================
-     Filtering
-     ========================================================= */
   function applyFilters() {
-    const dept = el("dept").value.trim().toUpperCase();
+    const dept = el("dept").value.trim().toLowerCase();
     const fac = el("faculty").value.trim().toLowerCase();
-    const q = el("q").value.trim().toLowerCase();
-
     const from = el("fromDate").value ? new Date(el("fromDate").value) : null;
     const to = el("toDate").value ? new Date(el("toDate").value) : null;
     const toEnd = to ? new Date(to.getTime() + 24*60*60*1000 - 1) : null;
 
     viewRows = allRows.filter(r => {
-      const rDept = String(r.department||"").trim().toUpperCase();
-      const rFac  = String(r.faculty||"").trim().toLowerCase();
-      const blob  = (r.faculty + " " + r.equipment + " " + r.consumables + " " + r.incidentDetails).toLowerCase();
+      const rDept = getField(r, "Department").trim().toLowerCase();
+      const rFac  = getField(r, "FacultyName", "FACULTY NAME", "Faculty Name").trim().toLowerCase();
+      const d = parseTimestamp(getField(r, "Timestamp"));
 
       if (dept && rDept !== dept) return false;
       if (fac && !rFac.includes(fac)) return false;
-      if (q && !blob.includes(q)) return false;
 
-      // If date filters are used, require valid timestamp for professional consistency
-      if ((from || toEnd) && !r.tsDate) return false;
-      if (from && r.tsDate && r.tsDate < from) return false;
-      if (toEnd && r.tsDate && r.tsDate > toEnd) return false;
+      if (from && d && d < from) return false;
+      if (toEnd && d && d > toEnd) return false;
 
       return true;
     });
@@ -1169,35 +571,10 @@ window.addEventListener("DOMContentLoaded", () => {
     renderAll();
   }
 
-  function resetFilters(){
-    el("dept").value = "";
-    el("faculty").value = "";
-    el("q").value = "";
-    el("fromDate").value = "";
-    el("toDate").value = "";
-    viewRows = [...allRows];
-    renderAll();
-  }
-
-  /* =========================================================
-     Export (Professional columns)
-     ========================================================= */
   function exportCSV(rows) {
-    const cols = ["Timestamp","Department","Faculty Name","Groups Requested","Equipment Borrowed","Consumables Borrowed","Incident","Incident Details"];
+    const cols = headers.length ? headers : Object.keys(rows[0] || {});
     const out = [cols];
-
-    rows.forEach(r => {
-      out.push([
-        r.tsStr || fmtDateTime(r.tsDate) || "",
-        r.department || "",
-        r.faculty || "",
-        r.groups || "",
-        r.equipment || "",
-        r.consumables || "",
-        r.incident || "",
-        r.incidentDetails || ""
-      ]);
-    });
+    rows.forEach(obj => out.push(cols.map(h => obj[h] ?? "")));
 
     const csv = out.map(r => r.map(cell => {
       const s = String(cell ?? "");
@@ -1210,62 +587,41 @@ window.addEventListener("DOMContentLoaded", () => {
     const a = document.createElement("a");
     a.href = url;
     a.download = "gsc_borrower_export.csv";
-    document.body.appendChild(a);
     a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    URL.revokeObjectURL(url);
   }
 
-  /* =========================================================
-     Load data
-     ========================================================= */
+  function resetFilters(){
+    el("dept").value = "";
+    el("faculty").value = "";
+    el("fromDate").value = "";
+    el("toDate").value = "";
+    viewRows = [...allRows];
+    renderAll();
+  }
+
   async function loadData(){
     const btn = el("loadBtn");
-    const spin = el("loadSpin");
     btn.disabled = true;
-    spin.style.display = "";
-    el("dataMsg").textContent = "Fetching published CSV…";
-
+    btn.textContent = "Loading...";
     try{
-      const url = CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "cb=" + Date.now();
-      const res = await fetch(url, { cache:"no-store" });
-      if (!res.ok) throw new Error("Failed to load CSV. Check if the sheet is published to web as CSV.");
-
+    const url = CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "cb=" + Date.now();
+    const res = await fetch(url, { cache:"no-store" });
+      if (!res.ok) throw new Error("Failed to load CSV. Check if the sheet is published.");
       const text = await res.text();
       const parsed = parseCSV(text);
-      const { headers, objects } = rowsToObjects(parsed);
-
-      rawHeaders = headers;
-      rawRows = objects;
-
-      allRows = rawRows.map(normalizeRow);
-
-      // Sort newest first if timestamps exist
-      allRows.sort((a, b) => {
-        const ta = a.tsDate ? a.tsDate.getTime() : -Infinity;
-        const tb = b.tsDate ? b.tsDate.getTime() : -Infinity;
-        return tb - ta;
-      });
-
+      allRows = rowsToObjects(parsed);
       viewRows = [...allRows];
-      lastSync = new Date();
-
       renderAll();
-      el("dataMsg").textContent = `Loaded ${allRows.length} record(s).`;
-      toast("Data loaded.", "ok");
+      toast("Data loaded.");
     }catch(err){
-      el("dataMsg").textContent = "";
-      toast(String(err), "err");
+      alert(String(err));
     }finally{
       btn.disabled = false;
-      spin.style.display = "none";
+      btn.textContent = "Load / Refresh Data";
     }
   }
 
-  /* =========================================================
-     Submit slip (hidden Google Form)
-     - Uses iframe load event to confirm request completed (best effort)
-     ========================================================= */
   function setIncidentUI(){
     const yes = el("fIncident").value === "yes";
     el("incidentDetailsWrap").style.display = yes ? "" : "none";
@@ -1285,7 +641,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function submitLog(){
-    if (submitLock) return;
     const dept = el("fDept").value.trim();
     const faculty = el("fFaculty").value.trim();
     const groups = el("fGroups").value.trim();
@@ -1294,14 +649,9 @@ window.addEventListener("DOMContentLoaded", () => {
     const incident = el("fIncident").value.trim();
     const incidentDetails = el("fIncidentDetails").value.trim();
 
-    if (!faculty) { toast("Faculty Name is required.", "warn"); return; }
-    if (!equip && !cons) { toast("Fill Equipment or Consumables (at least one).", "warn"); return; }
-    if (incident === "yes" && !incidentDetails) { toast("Incident Details is required if incident = yes.", "warn"); return; }
-    if (!navigator.onLine) { toast("You appear offline. Please connect to the internet to submit.", "err"); return; }
-
-    submitLock = true;
-    el("submitLogBtn").disabled = true;
-    el("logStatus").textContent = "Submitting to Google Form…";
+    if (!faculty) { toast("Faculty Name is required."); return; }
+    if (!equip && !cons) { toast("Fill Equipment or Consumables (at least one)."); return; }
+    if (incident === "yes" && !incidentDetails) { toast("Incident Details is required if incident = yes."); return; }
 
     const form = document.createElement("form");
     form.action = FORM_POST_URL;
@@ -1327,523 +677,42 @@ window.addEventListener("DOMContentLoaded", () => {
 
     document.body.appendChild(form);
 
-    const iframe = el("hidden_iframe");
-    let settled = false;
+    el("submitLogBtn").disabled = true;
+    el("logStatus").textContent = "Submitting...";
 
-    const finalize = (mode) => {
-      if (settled) return;
-      settled = true;
+    form.submit();
 
-      try{ form.remove(); }catch{}
+    setTimeout(() => {
+      form.remove();
       el("submitLogBtn").disabled = false;
-      submitLock = false;
-
-      el("logStatus").textContent = (mode === "ok")
-        ? "Submitted ✅ (sync may take 1–3 minutes)"
-        : "Submitted (no confirmation, please refresh later)";
-
-      toast("Borrower slip submitted. If it’s not visible yet, wait 1–3 minutes then refresh.", "ok");
+      el("logStatus").textContent = "Submitted ✅";
+      toast("Borrower slip submitted.");
       clearLogForm();
-
-      // refresh after a short delay (best effort; Google CSV may still cache)
-      setTimeout(() => loadData(), 7000);
-    };
-
-    const onLoad = () => finalize("ok");
-    iframe.addEventListener("load", onLoad, { once:true });
-
-    // Fallback if iframe load doesn't fire (some browsers / network cases)
-    const fallbackTimer = setTimeout(() => finalize("fallback"), 4500);
-
-    try{
-      form.submit();
-    }catch(e){
-      clearTimeout(fallbackTimer);
-      iframe.removeEventListener("load", onLoad);
-      toast("Submit failed to start. Please try again.", "err");
-      el("logStatus").textContent = "";
-      el("submitLogBtn").disabled = false;
-      submitLock = false;
-      try{ form.remove(); }catch{}
-    }
+      setTimeout(() => loadData(), 2500);
+    }, 900);
   }
 
-  /* =========================================================
-     Professional Record Modal + Print
-     ========================================================= */
-  function openRecordModal(row){
-    lastOpenedRow = row;
-    const modal = el("recordModal");
-    el("modalSub").textContent = `${fmtDateTime(row.tsDate, row.tsStr)} • ${row.department || "—"} • ${row.faculty || "—"}`;
-
-    const body = el("modalBody");
-    body.innerHTML = `
-      <div class="kv"><div class="k">Timestamp</div><div class="v">${escapeHtml(fmtDateTime(row.tsDate, row.tsStr))}</div></div>
-      <div class="kv"><div class="k">Department</div><div class="v">${escapeHtml(row.department || "—")}</div></div>
-      <div class="kv"><div class="k">Faculty Name</div><div class="v">${escapeHtml(row.faculty || "—")}</div></div>
-      <div class="kv"><div class="k">Groups Requested</div><div class="v">${escapeHtml(row.groups || "—")}</div></div>
-      <div class="kv"><div class="k">Equipment Borrowed</div><div class="v">${escapeHtml(row.equipment || "—")}</div></div>
-      <div class="kv"><div class="k">Consumables Borrowed</div><div class="v">${escapeHtml(row.consumables || "—")}</div></div>
-      <div class="kv"><div class="k">Incident?</div><div class="v">${normalizeYes(row.incident) ? "Yes" : "No"}</div></div>
-      <div class="kv"><div class="k">Incident Details</div><div class="v">${escapeHtml(row.incidentDetails || (normalizeYes(row.incident) ? "—" : "N/A"))}</div></div>
-    `;
-
-    modal.classList.add("show");
-    modal.setAttribute("aria-hidden","false");
-  }
-
-  function closeRecordModal(){
-    const modal = el("recordModal");
-    modal.classList.remove("show");
-    modal.setAttribute("aria-hidden","true");
-  }
-
-  function printRecord(row){
-    const w = window.open("", "_blank");
-    if (!w) { toast("Popup blocked. Please allow popups to print.", "warn"); return; }
-
-    const html = `
-      <!doctype html>
-      <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-      <title>Borrower Slip Record</title>
-      <style>
-        body{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:24px; color:#0F172A; }
-        .head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
-        .title{ font-size:18px; font-weight:900; }
-        .sub{ color:#64748B; font-size:12px; margin-top:3px; }
-        .card{ border:1px solid #E2E8F0; border-radius:14px; padding:14px; margin-top:12px; }
-        .kv{ display:grid; grid-template-columns: 180px 1fr; gap:10px; padding:10px 0; border-bottom:1px solid #E2E8F0; }
-        .kv:last-child{ border-bottom:none; }
-        .k{ color:#64748B; font-weight:900; font-size:12px; }
-        .v{ font-weight:700; white-space:pre-wrap; font-size:13px; }
-        .foot{ margin-top:14px; color:#64748B; font-size:12px; }
-        @media print{ body{ margin:0; } }
-      </style>
-      </head><body>
-        <div class="head">
-          <div>
-            <div class="title">GSC Laboratory Borrower Slip — Record</div>
-            <div class="sub">Good Samaritan Colleges • CAHP / CNAM</div>
-          </div>
-          <div class="sub">${escapeHtml(fmtDateTime(row.tsDate, row.tsStr))}</div>
-        </div>
-
-        <div class="card">
-          <div class="kv"><div class="k">Department</div><div class="v">${escapeHtml(row.department || "—")}</div></div>
-          <div class="kv"><div class="k">Faculty Name</div><div class="v">${escapeHtml(row.faculty || "—")}</div></div>
-          <div class="kv"><div class="k">Groups Requested</div><div class="v">${escapeHtml(row.groups || "—")}</div></div>
-          <div class="kv"><div class="k">Equipment Borrowed</div><div class="v">${escapeHtml(row.equipment || "—")}</div></div>
-          <div class="kv"><div class="k">Consumables Borrowed</div><div class="v">${escapeHtml(row.consumables || "—")}</div></div>
-          <div class="kv"><div class="k">Incident?</div><div class="v">${normalizeYes(row.incident) ? "Yes" : "No"}</div></div>
-          <div class="kv"><div class="k">Incident Details</div><div class="v">${escapeHtml(row.incidentDetails || (normalizeYes(row.incident) ? "—" : "N/A"))}</div></div>
-        </div>
-
-        <div class="foot">Developed by Piolo Bernardino — Laboratory Custodian</div>
-        <script>window.onload=()=>window.print();</script>
-      </body></html>
-    `;
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
-  }
-
-  /* =========================================================
-     Reports: period range + “most used” stats + charts
-     ========================================================= */
-  function monthStartEnd(year, monthIndex0){
-    const start = new Date(year, monthIndex0, 1, 0,0,0,0);
-    const end = new Date(year, monthIndex0 + 1, 0, 23,59,59,999);
-    return { start, end };
-  }
-
-  function getReportRange(){
-    const period = el("period").value;
-    const monthPick = el("monthPick").value; // yyyy-mm
-    const now = new Date();
-
-    // Default: current month if not set (for monthly/quarterly/semiannual)
-    let y = now.getFullYear();
-    let m0 = now.getMonth();
-    if (monthPick && /^\d{4}-\d{2}$/.test(monthPick)){
-      y = Number(monthPick.slice(0,4));
-      m0 = Number(monthPick.slice(5,7)) - 1;
-    }
-
-    if (period === "monthly"){
-      const { start, end } = monthStartEnd(y, m0);
-      return { start, end, label: `Monthly (${start.toLocaleString(undefined,{month:"long"})} ${y})` };
-    }
-
-    if (period === "quarterly"){
-      const q = Math.floor(m0 / 3); // 0..3
-      const startM = q*3;
-      const start = new Date(y, startM, 1, 0,0,0,0);
-      const end = new Date(y, startM + 3, 0, 23,59,59,999);
-      return { start, end, label: `Quarterly (Q${q+1} ${y})` };
-    }
-
-    if (period === "semiannual"){
-      const half = m0 < 6 ? 1 : 2;
-      const startM = half === 1 ? 0 : 6;
-      const start = new Date(y, startM, 1, 0,0,0,0);
-      const end = new Date(y, startM + 6, 0, 23,59,59,999);
-      return { start, end, label: `Semi-Annual (H${half} ${y})` };
-    }
-
-    // annual
-    const year = monthPick ? y : now.getFullYear();
-    const start = new Date(year, 0, 1, 0,0,0,0);
-    const end = new Date(year, 12, 0, 23,59,59,999);
-    return { start, end, label: `Annual (${year})` };
-  }
-
-  function filterForReport(){
-    const dept = el("dept").value.trim().toUpperCase();
-    const fac = el("faculty").value.trim().toLowerCase();
-    const q = el("q").value.trim().toLowerCase();
-
-    const { start, end, label } = getReportRange();
-
-    const rows = allRows.filter(r => {
-      const rDept = String(r.department||"").trim().toUpperCase();
-      const rFac  = String(r.faculty||"").trim().toLowerCase();
-      const blob  = (r.faculty + " " + r.equipment + " " + r.consumables + " " + r.incidentDetails).toLowerCase();
-
-      if (dept && rDept !== dept) return false;
-      if (fac && !rFac.includes(fac)) return false;
-      if (q && !blob.includes(q)) return false;
-
-      if (!r.tsDate) return false;
-      if (r.tsDate < start || r.tsDate > end) return false;
-
-      return true;
-    });
-
-    return { rows, start, end, label };
-  }
-
-  function splitItems(text){
-    const s = String(text || "").trim();
-    if (!s) return [];
-    let parts = s.split(/[\n;•|]+/).map(x => x.trim()).filter(Boolean);
-
-    // If user used commas as separators and no other separators were found, split on commas too
-    if (parts.length === 1 && parts[0].includes(",") && !parts[0].includes("http")){
-      const alt = parts[0].split(",").map(x => x.trim()).filter(Boolean);
-      if (alt.length > 1) parts = alt;
-    }
-
-    return parts.map(p => {
-      // Try to parse a quantity from patterns like:
-      // "Beaker - 2", "Gloves 1 box", "Test tube x10", "Alcohol - 500 mL"
-      const cleaned = p.replace(/\s+/g, " ").trim();
-
-      // Extract first number occurrence as quantity candidate
-      const numMatch = cleaned.match(/(\d+(?:\.\d+)?)/);
-      let qty = null;
-      let name = cleaned;
-
-      if (numMatch){
-        qty = Number(numMatch[1]);
-        // Prefer to split at separators before the number if present
-        const idx = cleaned.indexOf(numMatch[1]);
-        const left = cleaned.slice(0, idx).replace(/[-–—:xX*]+\s*$/,"").trim();
-        if (left.length >= 2) name = left;
-        // If left is too short, keep original name (some entries start with number)
-      }
-
-      name = name.replace(/^\W+|\W+$/g, "").trim();
-      if (!name) name = cleaned.trim();
-
-      return { name, qty: (isFinite(qty) ? qty : null) };
-    }).filter(x => x.name);
-  }
-
-  function buildUsage(rows, field){
-    // field: "equipment" or "consumables"
-    const map = new Map();
-
-    rows.forEach(r => {
-      const items = splitItems(r[field]);
-      if (!items.length) return;
-
-      // Mentions should be per-record unique
-      const seen = new Set();
-      for (const it of items){
-        const key = it.name.toLowerCase().replace(/\s+/g, " ").trim();
-        if (!key) continue;
-
-        if (!map.has(key)){
-          map.set(key, { item: it.name, mentions: 0, quantity: 0, qtyCounted: 0 });
-        }
-        const agg = map.get(key);
-
-        if (!seen.has(key)){
-          agg.mentions += 1;
-          seen.add(key);
-        }
-        if (it.qty !== null){
-          agg.quantity += it.qty;
-          agg.qtyCounted += 1;
-        }
-      }
-    });
-
-    const arr = Array.from(map.values());
-    arr.sort((a,b) => {
-      // Default sort by mentions, then quantity, then name
-      if (b.mentions !== a.mentions) return b.mentions - a.mentions;
-      if (b.quantity !== a.quantity) return b.quantity - a.quantity;
-      return a.item.localeCompare(b.item);
-    });
-    return arr;
-  }
-
-  function renderTopTable(tbodyEl, items, topN){
-    tbodyEl.innerHTML = "";
-    const top = items.slice(0, topN);
-    if (!top.length){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td class="muted" colspan="3">No data.</td>`;
-      tbodyEl.appendChild(tr);
-      return;
-    }
-    const frag = document.createDocumentFragment();
-    top.forEach(it => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${escapeHtml(it.item)}</td>
-        <td class="right">${it.mentions}</td>
-        <td class="right">${it.qtyCounted ? it.quantity : "—"}</td>
-      `;
-      frag.appendChild(tr);
-    });
-    tbodyEl.appendChild(frag);
-  }
-
-  function drawBarChart(canvas, items, metric, topN, title){
-    const dpr = window.devicePixelRatio || 1;
-    const ctx = canvas.getContext("2d");
-
-    const data = items.slice(0, topN).map(it => ({
-      label: it.item,
-      value: metric === "quantity" ? (it.qtyCounted ? it.quantity : 0) : it.mentions
-    }));
-
-    // If quantity metric selected but everything is 0, fallback visually to mentions
-    const allZero = data.every(d => d.value === 0);
-    const finalMetric = (metric === "quantity" && allZero) ? "mentions" : metric;
-    const data2 = items.slice(0, topN).map(it => ({
-      label: it.item,
-      value: finalMetric === "quantity" ? (it.qtyCounted ? it.quantity : 0) : it.mentions
-    }));
-
-    const css = getComputedStyle(document.documentElement);
-    const barColor = css.getPropertyValue("--gsc-blue-2").trim() || "#2563EB";
-    const textColor = css.getPropertyValue("--text").trim() || "#0F172A";
-    const muted = css.getPropertyValue("--muted").trim() || "#64748B";
-    const border = css.getPropertyValue("--border").trim() || "#E2E8F0";
-
-    // Dynamic size
-    const width = canvas.parentElement.clientWidth - 2; // slight padding
-    const rowH = 26;
-    const pad = 14;
-    const labelW = Math.max(160, Math.min(260, Math.floor(width * 0.38)));
-    const h = pad + 26 + data2.length * rowH + pad + 8;
-
-    canvas.width = Math.max(320, Math.floor(width * dpr));
-    canvas.height = Math.floor(h * dpr);
-    canvas.style.width = Math.max(320, width) + "px";
-    canvas.style.height = h + "px";
-
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // Background
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0,0,width,h);
-
-    // Title
-    ctx.fillStyle = textColor;
-    ctx.font = "1000 13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText(title, pad, pad + 10);
-
-    // Subtitle
-    ctx.fillStyle = muted;
-    ctx.font = "900 12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    const sub = finalMetric === "quantity" ? "Metric: Quantity (sum)" : "Metric: Mentions (logs)";
-    ctx.fillText(sub, pad, pad + 26);
-
-    // Bars
-    const maxVal = Math.max(1, ...data2.map(d => d.value));
-    const chartX = pad;
-    const chartY = pad + 36;
-    const barX = chartX + labelW;
-    const barW = width - barX - pad;
-
-    // Separator line
-    ctx.strokeStyle = border;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(chartX, chartY);
-    ctx.lineTo(width - pad, chartY);
-    ctx.stroke();
-
-    data2.forEach((d, i) => {
-      const y = chartY + 12 + i * rowH;
-
-      // label
-      const label = d.label.length > 28 ? d.label.slice(0, 27) + "…" : d.label;
-      ctx.fillStyle = textColor;
-      ctx.font = "900 12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-      ctx.fillText(label, chartX, y + 10);
-
-      // bar background
-      ctx.fillStyle = "rgba(37,99,235,0.10)";
-      ctx.fillRect(barX, y, barW, 12);
-
-      // bar fill
-      const wFill = Math.round((d.value / maxVal) * barW);
-      ctx.fillStyle = barColor;
-      ctx.fillRect(barX, y, wFill, 12);
-
-      // value label
-      ctx.fillStyle = muted;
-      ctx.font = "1000 12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-      const valText = String(d.value);
-      ctx.fillText(valText, barX + barW + 6 - ctx.measureText(valText).width, y + 11);
-    });
-  }
-
-  function runReport(){
-    if (!allRows.length){
-      toast("Load data first.", "warn");
-      return;
-    }
-    const { rows, start, end, label } = filterForReport();
-
-    const dept = el("dept").value.trim();
-    const fac = el("faculty").value.trim();
-    const q = el("q").value.trim();
-
-    const titleParts = [
-      `Report: ${label}`,
-      `Range: ${fmtDate(start)} → ${fmtDate(end)}`
-    ];
-    if (dept) titleParts.push(`Dept: ${dept}`);
-    if (fac) titleParts.push(`Faculty: ${fac}`);
-    if (q) titleParts.push(`Search: "${q}"`);
-
-    el("reportTitle").textContent = titleParts.join(" • ");
-
-    const incidents = rows.filter(r => normalizeYes(r.incident));
-    const groupsSum = rows.reduce((acc, r) => acc + (isFinite(Number(r.groups)) ? Number(r.groups) : 0), 0);
-    const eqFilled = rows.filter(r => r.equipment).length;
-    const conFilled = rows.filter(r => r.consumables).length;
-
-    el("rRecords").textContent = rows.length;
-    el("rIncidents").textContent = incidents.length;
-    el("rGroups").textContent = groupsSum;
-    el("rEqCon").textContent = `${eqFilled} / ${conFilled}`;
-
-    // Incident list
-    if (!incidents.length){
-      el("incidentList").textContent = "—";
-    } else {
-      const lines = incidents.slice(0, 50).map((r, i) => {
-        const when = fmtDateTime(r.tsDate, r.tsStr);
-        return `${i+1}. [${when}] (${r.department}) ${r.faculty} — ${r.incidentDetails || "—"}`;
-      });
-      if (incidents.length > 50) lines.push(`… and ${incidents.length - 50} more`);
-      el("incidentList").textContent = lines.join("\n");
-    }
-
-    // Usage stats
-    const metric = el("metric").value;
-    const topN = Number(el("topN").value) || 10;
-
-    const eqItems = buildUsage(rows, "equipment");
-    const conItems = buildUsage(rows, "consumables");
-
-    el("eqMeta").textContent = `${eqItems.length} unique item(s)`;
-    el("conMeta").textContent = `${conItems.length} unique item(s)`;
-
-    renderTopTable(el("eqTable").querySelector("tbody"), eqItems, topN);
-    renderTopTable(el("conTable").querySelector("tbody"), conItems, topN);
-
-    drawBarChart(el("eqChart"), eqItems, metric, topN, "Most Used Equipment");
-    drawBarChart(el("conChart"), conItems, metric, topN, "Most Used Consumables");
-
-    toast("Report generated.", "ok");
-  }
-
-  function printReport(){
-    // Print current report view
-    window.print();
-  }
-
-  /* =========================================================
-     Init + event wiring
-     ========================================================= */
+  // ✅ Wire up tab clicks
   document.querySelectorAll(".tab").forEach(btn => {
-    btn.addEventListener("click", () => {
-      setActiveTab(btn.dataset.tab);
-
-      // Make Reports feel instant: auto-run if user opens reports tab
-      if (btn.dataset.tab === "reports") {
-        runReport();
-      }
-    });
+    btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
   });
 
-  // Buttons + filters
+  // Buttons
   el("loadBtn").addEventListener("click", loadData);
   el("applyBtn").addEventListener("click", applyFilters);
   el("exportBtn").addEventListener("click", () => exportCSV(viewRows));
   el("resetBtn").addEventListener("click", resetFilters);
-
-  // Log submit
   el("fIncident").addEventListener("change", setIncidentUI);
   el("submitLogBtn").addEventListener("click", submitLog);
   el("clearLogBtn").addEventListener("click", clearLogForm);
 
-  // Reports
-  el("runReportBtn").addEventListener("click", runReport);
-  el("printBtn").addEventListener("click", printReport);
-  el("metric").addEventListener("change", runReport);
-  el("topN").addEventListener("change", runReport);
-  el("period").addEventListener("change", runReport);
-  el("monthPick").addEventListener("change", runReport);
-
-  // Modal
-  el("modalX").addEventListener("click", closeRecordModal);
-  el("modalCloseBtn").addEventListener("click", closeRecordModal);
-  el("recordModal").addEventListener("click", (e) => {
-    if (e.target && e.target.hasAttribute("data-close")) closeRecordModal();
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeRecordModal();
-  });
-  el("modalPrintBtn").addEventListener("click", () => {
-    if (lastOpenedRow) printRecord(lastOpenedRow);
-  });
-
-  // Network UI
-  setOnlineUI();
-  window.addEventListener("online", () => { setOnlineUI(); toast("Back online.", "ok"); });
-  window.addEventListener("offline", () => { setOnlineUI(); toast("You are offline.", "warn"); });
-
-  // Default monthPick to current month (professional feel)
-  const now = new Date();
-  const mm = String(now.getMonth()+1).padStart(2,"0");
-  el("monthPick").value = `${now.getFullYear()}-${mm}`;
-
   // Init
   setIncidentUI();
-  setActiveTab("log");
-  loadData(); // preload data for other tabs
+  setActiveTab("log");      // ✅ This will hide Logbook/Reports/Incidents
+  loadData();               // ✅ Loads data for other tabs
 });
 </script>
+
 
 </body>
 </html>
