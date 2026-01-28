@@ -300,6 +300,28 @@
         <div class="val" id="kpiDeptSplit">—</div>
         <div class="hint">CAHP vs CNAM</div>
       </div>
+
+      <!-- NEW KPI tiles -->
+      <div class="kpi">
+        <div class="label">Equipment Used (qty)</div>
+        <div class="val" id="kpiEquipQty">—</div>
+        <div class="hint">Parsed from logs</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Consumables Used (qty)</div>
+        <div class="val" id="kpiConsQty">—</div>
+        <div class="hint">Parsed from logs</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Top Equipment</div>
+        <div class="val" id="kpiTopEquip">—</div>
+        <div class="hint">Most used item</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Top Consumable</div>
+        <div class="val" id="kpiTopCons">—</div>
+        <div class="hint">Most used item</div>
+      </div>
     </div>
   </section>
 
@@ -367,11 +389,56 @@
         <div class="val" id="rEqCon">—</div>
         <div class="hint">Count of non-empty fields</div>
       </div>
+
+      <!-- NEW report KPIs -->
+      <div class="kpi">
+        <div class="label">Equipment Used (qty)</div>
+        <div class="val" id="rEquipQty">—</div>
+        <div class="hint">Parsed from logs</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Consumables Used (qty)</div>
+        <div class="val" id="rConsQty">—</div>
+        <div class="hint">Parsed from logs</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Top Equipment</div>
+        <div class="val" id="rTopEquip">—</div>
+        <div class="hint">Most used</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Top Consumable</div>
+        <div class="val" id="rTopCons">—</div>
+        <div class="hint">Most used</div>
+      </div>
     </div>
 
     <div class="card" style="margin-top:12px; border-style:dashed;">
       <div style="font-weight:1000;">Incidents (within report)</div>
       <pre class="muted" id="incidentList" style="white-space:pre-wrap; margin:8px 0 0;">—</pre>
+    </div>
+
+    <!-- NEW: Most used tables -->
+    <div class="card" style="margin-top:12px;">
+      <div style="font-weight:1000;">Most Used Equipment (within report)</div>
+      <div class="table-wrap" style="margin-top:10px;">
+        <table id="equipReport">
+          <thead><tr><th>Equipment</th><th>Total Qty</th><th># Mentions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="note">Qty comes from patterns like <b>Beaker - 2</b>. If no number is found, it counts as 1.</div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div style="font-weight:1000;">Most Used Consumables (within report)</div>
+      <div class="table-wrap" style="margin-top:10px;">
+        <table id="consReport">
+          <thead><tr><th>Consumable</th><th>Total Qty</th><th># Mentions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="note">Units (mL/box/pcs) are not standardized yet; totals are numeric-only.</div>
     </div>
   </section>
 
@@ -391,6 +458,7 @@
 </main>
 
 <footer>Developed by Piolo Bernardino — Laboratory Custodian</footer>
+
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   /** ✅ Set your Google Sheet CSV link here (must end with pub?output=csv) */
@@ -484,6 +552,118 @@ window.addEventListener("DOMContentLoaded", () => {
     return "";
   }
 
+  // ========= NEW: Equipment/Consumables parsing + aggregation =========
+
+  function normalizeItemName(s){
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  }
+
+  // Supports:
+  // "Test tube - 10; Beaker - 2"
+  // "Gloves - 1 box\nAlcohol - 500 mL"
+  // If qty missing, counts as 1.
+  function parseItemList(text){
+    const raw = String(text || "").trim();
+    if (!raw) return [];
+
+    const parts = raw.split(/[\n;]+/).map(p => p.trim()).filter(Boolean);
+
+    return parts.map(p => {
+      // allow: "Item - 10", "Item: 10", "Item = 10", "Item - 500 mL"
+      const m = p.match(/^(.+?)(?:\s*[-:=]\s*)(.+)$/);
+      if (!m) {
+        const nameRaw = p.trim();
+        return { nameRaw, nameKey: normalizeItemName(nameRaw), qty: 1, unit: "" };
+      }
+
+      const nameRaw = m[1].trim();
+      const rhs = m[2].trim();
+
+      const qm = rhs.match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
+      const qty = qm ? Number(qm[1]) : 1;
+      const unit = qm ? (qm[2] || "").trim() : "";
+
+      return {
+        nameRaw,
+        nameKey: normalizeItemName(nameRaw),
+        qty: isFinite(qty) ? qty : 1,
+        unit
+      };
+    });
+  }
+
+  function getEquipText(r){
+    return getField(
+      r,
+      "EquipmentBorrowed",
+      "Equipment Borrowed",
+      "Equipment Borrowed (optional)",
+      "Equipment"
+    );
+  }
+  function getConsText(r){
+    return getField(
+      r,
+      "ConsumablesBorrowed",
+      "Consumables Borrowed",
+      "Consumables Borrowed (optional)",
+      "Consumables"
+    );
+  }
+
+  function aggregateItemUsage(rows, type /* "equip"|"cons" */){
+    const qtyBy = new Map();      // nameKey -> total qty
+    const mentionsBy = new Map(); // nameKey -> count of times item appears
+    const displayBy = new Map();  // nameKey -> nameRaw first seen
+
+    for (const r of rows){
+      const list = parseItemList(type === "equip" ? getEquipText(r) : getConsText(r));
+      for (const it of list){
+        if (!displayBy.has(it.nameKey)) displayBy.set(it.nameKey, it.nameRaw);
+        qtyBy.set(it.nameKey, (qtyBy.get(it.nameKey) || 0) + (it.qty || 0));
+        mentionsBy.set(it.nameKey, (mentionsBy.get(it.nameKey) || 0) + 1);
+      }
+    }
+
+    const items = [...qtyBy.keys()].map(k => ({
+      key: k,
+      name: displayBy.get(k) || k,
+      qty: qtyBy.get(k) || 0,
+      mentions: mentionsBy.get(k) || 0
+    }));
+
+    items.sort((a,b) => b.qty - a.qty);
+    const totalQty = items.reduce((acc, x) => acc + (x.qty || 0), 0);
+
+    return { items, totalQty, top: items[0] || null };
+  }
+
+  function renderTopTable(tableEl, items, maxRows = 12){
+    const tbody = tableEl.querySelector("tbody");
+    tbody.innerHTML = "";
+
+    const slice = items.slice(0, maxRows);
+    if (!slice.length){
+      tbody.innerHTML = `<tr><td colspan="3" class="muted">—</td></tr>`;
+      return;
+    }
+
+    slice.forEach(it => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${it.name}</td>
+        <td>${Number(it.qty || 0).toFixed(0)}</td>
+        <td>${it.mentions}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ========= existing table rendering =========
+
   function renderTable(tableEl, rows) {
     const thead = tableEl.querySelector("thead");
     const tbody = tableEl.querySelector("tbody");
@@ -530,6 +710,15 @@ window.addEventListener("DOMContentLoaded", () => {
     el("kpiIncidents").textContent = incidents;
     el("kpiGroups").textContent = groupsSum;
     el("kpiDeptSplit").textContent = `CAHP ${cahp} • CNAM ${cnam}`;
+
+    // NEW: equipment/consumables KPIs for current view
+    const eqAgg = aggregateItemUsage(rows, "equip");
+    const coAgg = aggregateItemUsage(rows, "cons");
+
+    el("kpiEquipQty").textContent = Number(eqAgg.totalQty || 0).toFixed(0);
+    el("kpiConsQty").textContent = Number(coAgg.totalQty || 0).toFixed(0);
+    el("kpiTopEquip").textContent = eqAgg.top ? `${eqAgg.top.name} (${Number(eqAgg.top.qty).toFixed(0)})` : "—";
+    el("kpiTopCons").textContent = coAgg.top ? `${coAgg.top.name} (${Number(coAgg.top.qty).toFixed(0)})` : "—";
   }
 
   function renderAll(){
@@ -605,8 +794,8 @@ window.addEventListener("DOMContentLoaded", () => {
     btn.disabled = true;
     btn.textContent = "Loading...";
     try{
-    const url = CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "cb=" + Date.now();
-    const res = await fetch(url, { cache:"no-store" });
+      const url = CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "cb=" + Date.now();
+      const res = await fetch(url, { cache:"no-store" });
       if (!res.ok) throw new Error("Failed to load CSV. Check if the sheet is published.");
       const text = await res.text();
       const parsed = parseCSV(text);
@@ -692,6 +881,110 @@ window.addEventListener("DOMContentLoaded", () => {
     }, 900);
   }
 
+  // ========= NEW: Report range + report calculations =========
+
+  function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function endOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23,59,59,999); }
+
+  function reportRangeFromUI(){
+    const period = el("period").value;
+    const monthVal = el("monthPick").value; // "YYYY-MM"
+    if (!monthVal){
+      // fallback: use current filter From/To if available, else whole dataset
+      const from = el("fromDate").value ? new Date(el("fromDate").value) : null;
+      const to = el("toDate").value ? new Date(el("toDate").value) : null;
+      if (from && to) return { from: startOfDay(from), to: endOfDay(to), label: "Custom (From/To filters)" };
+      return { from: null, to: null, label: "All time (no month selected)" };
+    }
+
+    const [Y, M] = monthVal.split("-").map(Number);
+    const monthStart = new Date(Y, M-1, 1);
+    const monthEnd = new Date(Y, M, 0); // last day of month
+
+    if (period === "monthly"){
+      return { from: startOfDay(monthStart), to: endOfDay(monthEnd), label: monthStart.toLocaleString(undefined,{month:"long",year:"numeric"}) };
+    }
+
+    if (period === "quarterly"){
+      const q = Math.floor((M-1)/3);           // 0..3
+      const qStartMonth = q*3;                 // 0,3,6,9
+      const from = new Date(Y, qStartMonth, 1);
+      const to = new Date(Y, qStartMonth+3, 0);
+      const qNum = q+1;
+      return { from: startOfDay(from), to: endOfDay(to), label: `Q${qNum} ${Y}` };
+    }
+
+    if (period === "semiannual"){
+      const h = (M <= 6) ? 1 : 2;
+      const from = new Date(Y, h === 1 ? 0 : 6, 1);
+      const to = new Date(Y, h === 1 ? 6 : 12, 0);
+      return { from: startOfDay(from), to: endOfDay(to), label: `Semi-Annual (H${h}) ${Y}` };
+    }
+
+    // annual
+    const from = new Date(Y, 0, 1);
+    const to = new Date(Y, 12, 0);
+    return { from: startOfDay(from), to: endOfDay(to), label: `Annual ${Y}` };
+  }
+
+  function rowsInRange(rows, from, to){
+    if (!from || !to) return [...rows];
+    return rows.filter(r => {
+      const d = parseTimestamp(getField(r, "Timestamp"));
+      if (!d) return false;
+      return d >= from && d <= to;
+    });
+  }
+
+  function runReport(){
+    const { from, to, label } = reportRangeFromUI();
+    const base = [...viewRows]; // report respects current filters
+    const reportRows = rowsInRange(base, from, to);
+
+    el("reportTitle").textContent = `Report: ${label} • Records: ${reportRows.length}`;
+
+    const incidents = reportRows.filter(r => normalizeYes(getField(r, "Incident", "Incident?")));
+    const groupsSum = reportRows.reduce((acc, r) => {
+      const v = Number(getField(r, "GroupsRequested", "Number of Groups Requested"));
+      return acc + (isFinite(v) ? v : 0);
+    }, 0);
+
+    const eqNonEmpty = reportRows.filter(r => String(getEquipText(r)||"").trim() !== "").length;
+    const coNonEmpty = reportRows.filter(r => String(getConsText(r)||"").trim() !== "").length;
+
+    el("rRecords").textContent = reportRows.length;
+    el("rIncidents").textContent = incidents.length;
+    el("rGroups").textContent = groupsSum;
+    el("rEqCon").textContent = `${eqNonEmpty} / ${coNonEmpty}`;
+
+    // incidents list
+    if (!incidents.length){
+      el("incidentList").textContent = "—";
+    }else{
+      el("incidentList").textContent = incidents.map(r => {
+        const ts = getField(r,"Timestamp");
+        const dept = getField(r,"Department");
+        const fac = getField(r,"FacultyName","Faculty Name","FACULTY NAME");
+        const det = getField(r,"IncidentDetails","Incident Details","Incident Details (required if yes)") || "(no details)";
+        return `• ${ts} • ${dept} • ${fac} — ${det}`;
+      }).join("\n");
+    }
+
+    // NEW: equipment/consumables report KPIs + tables
+    const eqAgg = aggregateItemUsage(reportRows, "equip");
+    const coAgg = aggregateItemUsage(reportRows, "cons");
+
+    el("rEquipQty").textContent = Number(eqAgg.totalQty || 0).toFixed(0);
+    el("rConsQty").textContent = Number(coAgg.totalQty || 0).toFixed(0);
+    el("rTopEquip").textContent = eqAgg.top ? `${eqAgg.top.name} (${Number(eqAgg.top.qty).toFixed(0)})` : "—";
+    el("rTopCons").textContent = coAgg.top ? `${coAgg.top.name} (${Number(coAgg.top.qty).toFixed(0)})` : "—";
+
+    renderTopTable(el("equipReport"), eqAgg.items, 15);
+    renderTopTable(el("consReport"), coAgg.items, 15);
+
+    toast("Report generated.");
+  }
+
   // ✅ Wire up tab clicks
   document.querySelectorAll(".tab").forEach(btn => {
     btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
@@ -706,13 +999,16 @@ window.addEventListener("DOMContentLoaded", () => {
   el("submitLogBtn").addEventListener("click", submitLog);
   el("clearLogBtn").addEventListener("click", clearLogForm);
 
+  // Reports buttons
+  el("runReportBtn").addEventListener("click", runReport);
+  el("printBtn").addEventListener("click", () => window.print());
+
   // Init
   setIncidentUI();
-  setActiveTab("log");      // ✅ This will hide Logbook/Reports/Incidents
-  loadData();               // ✅ Loads data for other tabs
+  setActiveTab("log");
+  loadData();
 });
 </script>
-
 
 </body>
 </html>
