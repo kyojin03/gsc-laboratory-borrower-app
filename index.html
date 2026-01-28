@@ -605,7 +605,8 @@ window.addEventListener("DOMContentLoaded", () => {
     btn.disabled = true;
     btn.textContent = "Loading...";
     try{
-      const res = await fetch(CSV_URL, { cache:"no-store" });
+    const url = CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "cb=" + Date.now();
+    const res = await fetch(url, { cache:"no-store" });
       if (!res.ok) throw new Error("Failed to load CSV. Check if the sheet is published.");
       const text = await res.text();
       const parsed = parseCSV(text);
