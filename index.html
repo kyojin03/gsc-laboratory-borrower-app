@@ -214,7 +214,7 @@
       </div>
     </div>
 
-    <!-- TABLE INPUTS (Equipment + Consumables) -->
+    <!-- NEW: TABLE INPUTS (Equipment + Consumables) -->
     <div class="row" style="margin-top:10px;">
       <div class="field" style="flex: 1 1 380px;">
         <label>Equipment Borrowed (optional)</label>
@@ -305,7 +305,6 @@
           <option value="">All</option>
           <option value="CAHP">CAHP</option>
           <option value="CNAM">CNAM</option>
-          <option value="JHS/SHS">JHS/SHS</option>
         </select>
       </div>
 
@@ -313,6 +312,7 @@
         <label>Faculty (optional)</label>
         <input id="faculty" placeholder="Type faculty name (partial ok)" list="facultyList" />
         <datalist id="facultyList"></datalist>
+
       </div>
 
       <div class="field">
@@ -350,7 +350,7 @@
       <div class="kpi">
         <div class="label">Departments split</div>
         <div class="val" id="kpiDeptSplit">—</div>
-        <div class="hint">CAHP vs CNAM vs JHS/SHS</div>
+        <div class="hint">CAHP vs CNAM</div>
       </div>
 
       <!-- NEW KPI tiles -->
@@ -421,6 +421,7 @@
     <div style="margin-top:12px;" id="reportTitle" class="muted"></div>
     <div id="reportFacultyPrint" style="margin-top:6px; font-weight:1000;"></div>
 
+
     <div class="kpis" style="margin-top:10px;">
       <div class="kpi">
         <div class="label">Report Records</div>
@@ -443,7 +444,7 @@
         <div class="hint">Count of non-empty fields</div>
       </div>
 
-      <!-- report KPIs -->
+      <!-- NEW report KPIs -->
       <div class="kpi">
         <div class="label">Equipment Used (qty)</div>
         <div class="val" id="rEquipQty">—</div>
@@ -471,7 +472,7 @@
       <pre class="muted" id="incidentList" style="white-space:pre-wrap; margin:8px 0 0;">—</pre>
     </div>
 
-    <!-- Most used tables -->
+    <!-- NEW: Most used tables -->
     <div class="card" style="margin-top:12px;">
       <div style="font-weight:1000;">Most Used Equipment (within report)</div>
       <div class="table-wrap" style="margin-top:10px;">
@@ -515,66 +516,66 @@
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   function normalizeName(s){
-    return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
-  }
+  return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
 
-  function getUniqueFacultyNames(rows){
-    const set = new Set();
-    for (const r of rows){
-      const full = String(getField(r, "FacultyName", "FACULTY NAME", "Faculty Name") || "").trim();
-      if (full) set.add(full);
+function getUniqueFacultyNames(rows){
+  const set = new Set();
+  for (const r of rows){
+    const full = String(getField(r, "FacultyName", "FACULTY NAME", "Faculty Name") || "").trim();
+    if (full) set.add(full);
+  }
+  return [...set].sort((a,b) => a.localeCompare(b));
+}
+
+function populateFacultyDatalist(){
+  const dl = el("facultyList");
+  if (!dl) return;
+
+  dl.innerHTML = "";
+  const names = getUniqueFacultyNames(allRows);
+
+  names.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    dl.appendChild(opt);
+  });
+}
+
+function getBestFacultyFullName(query, rows){
+  const q = normalizeName(query);
+  if (!q) return "";
+
+  const counts = new Map(); // fullName -> count
+  for (const r of rows){
+    const full = String(getField(r, "FacultyName", "FACULTY NAME", "Faculty Name") || "").trim();
+    if (!full) continue;
+
+    const fullNorm = normalizeName(full);
+    if (fullNorm.includes(q)){
+      counts.set(full, (counts.get(full) || 0) + 1);
     }
-    return [...set].sort((a,b) => a.localeCompare(b));
   }
 
-  function populateFacultyDatalist(){
-    const dl = el("facultyList");
-    if (!dl) return;
+  if (!counts.size) return "";
 
-    dl.innerHTML = "";
-    const names = getUniqueFacultyNames(allRows);
+  // Most frequent; tie-breaker: longest name (usually the complete one)
+  const sorted = [...counts.entries()].sort((a,b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return b[0].length - a[0].length;
+  });
 
-    names.forEach(name => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      dl.appendChild(opt);
-    });
-  }
+  return sorted[0][0];
+}
 
-  function getBestFacultyFullName(query, rows){
-    const q = normalizeName(query);
-    if (!q) return "";
+function updateReportFacultyLine(){
+  const q = el("faculty").value.trim();
+  const best = getBestFacultyFullName(q, (viewRows && viewRows.length) ? viewRows : allRows);
 
-    const counts = new Map(); // fullName -> count
-    for (const r of rows){
-      const full = String(getField(r, "FacultyName", "FACULTY NAME", "Faculty Name") || "").trim();
-      if (!full) continue;
-
-      const fullNorm = normalizeName(full);
-      if (fullNorm.includes(q)){
-        counts.set(full, (counts.get(full) || 0) + 1);
-      }
-    }
-
-    if (!counts.size) return "";
-
-    // Most frequent; tie-breaker: longest name (usually the complete one)
-    const sorted = [...counts.entries()].sort((a,b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      return b[0].length - a[0].length;
-    });
-
-    return sorted[0][0];
-  }
-
-  function updateReportFacultyLine(){
-    const q = el("faculty").value.trim();
-    const best = getBestFacultyFullName(q, (viewRows && viewRows.length) ? viewRows : allRows);
-
-    el("reportFacultyPrint").textContent = q
-      ? `Faculty: ${best || q}`
-      : "";
-  }
+  el("reportFacultyPrint").textContent = q
+    ? `Faculty: ${best || q}`
+    : "";
+}
 
   /** ✅ Set your Google Sheet CSV link here (must end with pub?output=csv) */
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStDm_fif_7EAGcuDY1tEhTjFgNoV3G1uZEXWB_eQkwNmprD9BYCWbugmCITEqviHPvNMYbXj7iIc4I/pub?output=csv";
@@ -668,7 +669,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================
-  // Entry tables (Log tab)
+  // NEW: Entry tables (Log tab)
   // =========================
 
   function addEntryRow(tbodyEl, kind){
@@ -716,6 +717,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // =========================
   // Parsing + aggregation for KPIs/Reports
+  // Supports BOTH:
+  //  - "Microscope - 1; Slides - 2"
+  //  - "Microscope 1 slides 2"
   // =========================
 
   function normalizeItemName(s){
@@ -726,6 +730,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const raw = String(text || "").trim();
     if (!raw) return [];
 
+    // Split strong separators first; each chunk might still contain multiple pairs
     const chunks = raw
       .replace(/,/g, ";")
       .split(/[\n;]+/)
@@ -735,6 +740,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const items = [];
 
     for (const chunk of chunks){
+      // Prefer explicit "name - qty" / "name: qty" / "name=qty"
       const explicit = chunk.match(/^(.+?)(?:\s*[-:=]\s*)(.+)$/);
       if (explicit){
         const nameRaw = explicit[1].trim();
@@ -753,6 +759,7 @@ window.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // Fallback: "name qty name qty" parser
       const tokens = chunk.split(/\s+/).filter(Boolean);
       let nameParts = [];
       let foundAny = false;
@@ -776,6 +783,7 @@ window.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // If it ends with leftover words and no qty, count as 1
       const leftover = nameParts.join(" ").trim();
       if (leftover){
         items.push({
@@ -786,6 +794,7 @@ window.addEventListener("DOMContentLoaded", () => {
         });
       }
 
+      // If we somehow found nothing, still treat whole chunk as 1
       if (!foundAny && !leftover && chunk.trim()){
         items.push({
           nameRaw: chunk.trim(),
@@ -807,9 +816,9 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function aggregateItemUsage(rows, type /* "equip"|"cons" */){
-    const qtyBy = new Map();
-    const mentionsBy = new Map();
-    const displayBy = new Map();
+    const qtyBy = new Map();      // nameKey -> total qty
+    const mentionsBy = new Map(); // nameKey -> count of appearances
+    const displayBy = new Map();  // nameKey -> first seen nameRaw
 
     for (const r of rows){
       const list = parseItemList(type === "equip" ? getEquipText(r) : getConsText(r));
@@ -879,7 +888,6 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ===== kpisFor with JHS/SHS =====
   function kpisFor(rows){
     const total = rows.length;
     const incidents = rows.filter(r => normalizeYes(getField(r, "Incident", "Incident?"))).length;
@@ -888,27 +896,18 @@ window.addEventListener("DOMContentLoaded", () => {
       return acc + (isFinite(v) ? v : 0);
     }, 0);
 
-    const deptVal = (r) => getField(r,"Department").trim().toUpperCase();
-    const cahp = rows.filter(r => deptVal(r) === "CAHP").length;
-    const cnam = rows.filter(r => deptVal(r) === "CNAM").length;
-    const jhssh = rows.filter(r => deptVal(r) === "JHS/SHS").length;
+    const cahp = rows.filter(r => getField(r,"Department").trim().toUpperCase() === "CAHP").length;
+    const cnam = rows.filter(r => getField(r,"Department").trim().toUpperCase() === "CNAM").length;
 
-    return { total, incidents, groupsSum, cahp, cnam, jhssh };
+    return { total, incidents, groupsSum, cahp, cnam };
   }
 
   function renderKpis(rows){
-    const { total, incidents, groupsSum, cahp, cnam, jhssh } = kpisFor(rows);
+    const { total, incidents, groupsSum, cahp, cnam } = kpisFor(rows);
     el("kpiRecords").textContent = total;
     el("kpiIncidents").textContent = incidents;
     el("kpiGroups").textContent = groupsSum;
-
-    const totalDept = cahp + cnam + jhssh;
-    const pct = (v) => totalDept ? Math.round((v / totalDept) * 100) : 0;
-
-    el("kpiDeptSplit").textContent =
-      `CAHP ${cahp} (${pct(cahp)}%) • ` +
-      `CNAM ${cnam} (${pct(cnam)}%) • ` +
-      `JHS/SHS ${jhssh} (${pct(jhssh)}%)`;
+    el("kpiDeptSplit").textContent = `CAHP ${cahp} • CNAM ${cnam}`;
 
     const eqAgg = aggregateItemUsage(rows, "equip");
     const coAgg = aggregateItemUsage(rows, "cons");
@@ -961,7 +960,7 @@ window.addEventListener("DOMContentLoaded", () => {
   function exportCSV(rows) {
     const cols = headers.length ? headers : Object.keys(rows[0] || {});
     const out = [cols];
-    rows.forEach(obj => out.push(cols.map(h => obj[h] ?? ""));
+    rows.forEach(obj => out.push(cols.map(h => obj[h] ?? "")));
 
     const csv = out.map(r => r.map(cell => {
       const s = String(cell ?? "");
@@ -1000,7 +999,7 @@ window.addEventListener("DOMContentLoaded", () => {
       allRows = rowsToObjects(parsed);
       viewRows = [...allRows];
       renderAll();
-      populateFacultyDatalist();
+      populateFacultyDatalist();   // ← ADD THIS
       updateReportFacultyLine();
       toast("Data loaded.");
     }catch(err){
@@ -1034,6 +1033,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function submitLog(){
+    // NEW: generate text from tables into hidden textareas
     syncEntryTablesToHiddenTextareas();
 
     const dept = el("fDept").value.trim();
@@ -1094,7 +1094,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   function reportRangeFromUI(){
     const period = el("period").value;
-    const monthVal = el("monthPick").value;
+    const monthVal = el("monthPick").value; // "YYYY-MM"
     if (!monthVal){
       const from = el("fromDate").value ? new Date(el("fromDate").value) : null;
       const to = el("toDate").value ? new Date(el("toDate").value) : null;
@@ -1145,7 +1145,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const reportRows = rowsInRange(base, from, to);
 
     el("reportTitle").textContent = `Report: ${label} • Records: ${reportRows.length}`;
-    updateReportFacultyLine();
+      updateReportFacultyLine();
 
     const incidents = reportRows.filter(r => normalizeYes(getField(r, "Incident", "Incident?")));
     const groupsSum = reportRows.reduce((acc, r) => {
@@ -1202,15 +1202,15 @@ window.addEventListener("DOMContentLoaded", () => {
   el("submitLogBtn").addEventListener("click", submitLog);
   el("clearLogBtn").addEventListener("click", clearLogForm);
 
-  // Reports: auto-apply filters before running
+  // Reports
   el("runReportBtn").addEventListener("click", () => {
-    applyFilters();
-    runReport();
-  });
+  applyFilters(); // updates viewRows using dept/faculty/from/to inputs
+  runReport();    // now reportRows is truly filtered
+});
 
   el("printBtn").addEventListener("click", () => window.print());
 
-  // add-row buttons for entry tables
+  // NEW: add-row buttons for entry tables
   el("addEquipRowBtn").addEventListener("click", () => {
     addEntryRow(el("equipEntryTable").querySelector("tbody"), "equip");
   });
@@ -1222,6 +1222,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setIncidentUI();
   setActiveTab("log");
 
+  // init with one blank row each
   addEntryRow(el("equipEntryTable").querySelector("tbody"), "equip");
   addEntryRow(el("consEntryTable").querySelector("tbody"), "cons");
 
