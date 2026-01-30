@@ -350,7 +350,7 @@
       <div class="kpi">
         <div class="label">Departments split</div>
         <div class="val" id="kpiDeptSplit">—</div>
-        <div class="hint">CAHP vs CNAM</div>
+        <div class="hint">Share of records</div>
       </div>
 
       <!-- NEW KPI tiles -->
@@ -888,6 +888,49 @@ function updateReportFacultyLine(){
     });
   }
 
+  // =========================
+  // KPI: Dynamic department split (percentages)
+  // =========================
+
+  function normalizeDeptKey(s){
+    return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
+  function departmentSplitPercent(rows){
+    const displayBy = new Map(); // deptKey -> first seen display
+    const countBy = new Map();   // deptKey -> count
+
+    for (const r of rows){
+      const raw = String(getField(r, "Department") || "").trim();
+      const display = raw || "Unspecified";
+      const key = raw ? normalizeDeptKey(raw) : "__unspecified__";
+
+      if (!displayBy.has(key)) displayBy.set(key, display);
+      countBy.set(key, (countBy.get(key) || 0) + 1);
+    }
+
+    const total = rows.length;
+    if (!total) return { total: 0, parts: [], text: "—" };
+
+    const parts = [...countBy.entries()].map(([key, count]) => {
+      const name = displayBy.get(key) || key;
+      const pct = (count / total) * 100;
+      return { key, name, count, pct };
+    });
+
+    parts.sort((a,b) => b.count - a.count);
+
+    const fmt = (n) => {
+      const v = Number(n);
+      if (!isFinite(v)) return "0%";
+      const rounded = Math.round(v);
+      return `${rounded}%`;
+    };
+
+    const text = parts.map(p => `${p.name} ${fmt(p.pct)}`).join(" • ");
+    return { total, parts, text };
+  }
+
   function kpisFor(rows){
     const total = rows.length;
     const incidents = rows.filter(r => normalizeYes(getField(r, "Incident", "Incident?"))).length;
@@ -896,18 +939,17 @@ function updateReportFacultyLine(){
       return acc + (isFinite(v) ? v : 0);
     }, 0);
 
-    const cahp = rows.filter(r => getField(r,"Department").trim().toUpperCase() === "CAHP").length;
-    const cnam = rows.filter(r => getField(r,"Department").trim().toUpperCase() === "CNAM").length;
+    const deptSplit = departmentSplitPercent(rows);
 
-    return { total, incidents, groupsSum, cahp, cnam };
+    return { total, incidents, groupsSum, deptSplit };
   }
 
   function renderKpis(rows){
-    const { total, incidents, groupsSum, cahp, cnam } = kpisFor(rows);
+    const { total, incidents, groupsSum, deptSplit } = kpisFor(rows);
     el("kpiRecords").textContent = total;
     el("kpiIncidents").textContent = incidents;
     el("kpiGroups").textContent = groupsSum;
-    el("kpiDeptSplit").textContent = `CAHP ${cahp} • CNAM ${cnam}`;
+    el("kpiDeptSplit").textContent = deptSplit.text || "—";
 
     const eqAgg = aggregateItemUsage(rows, "equip");
     const coAgg = aggregateItemUsage(rows, "cons");
