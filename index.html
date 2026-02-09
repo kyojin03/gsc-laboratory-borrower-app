@@ -680,38 +680,38 @@ function updateReportFacultyLine(){
   // NEW: Entry tables (Log tab)
   // =========================
 
-  function addEntryRow(tbodyEl, kind){
-    const tr = document.createElement("tr");
+ function addEntryRow(tbodyEl, kind){
+  const tr = document.createElement("tr");
 
-    tr.innerHTML = `
-      <td><input class="entry-input ${kind}-name" placeholder="${kind === "equip" ? "e.g., Microscope" : "e.g., Gloves"}" /></td>
-      <td><input class="entry-input ${kind}-qty" type="number" min="1" step="1" placeholder="1" /></td>
-      <td class="no-print">
-        <button type="button" class="btn danger ${kind}-remove" style="padding:8px 10px;">×</button>
-      </td>
-    `;
+  tr.innerHTML = `
+    <td><input class="entry-input ${kind}-name" placeholder="${kind === "equip" ? "e.g., Microscope" : "e.g., Gloves"}" /></td>
+    <td><input class="entry-input ${kind}-qty" type="number" min="1" step="1" placeholder="1" /></td>
+    <td class="no-print">
+      <button type="button" class="btn danger ${kind}-remove" style="padding:8px 10px;">×</button>
+    </td>
+  `;
 
-    tr.querySelector(\`.${kind}-remove\`).addEventListener("click", () => tr.remove());
-    tbodyEl.appendChild(tr);
+  tr.querySelector(`.${kind}-remove`).addEventListener("click", () => tr.remove());
+  tbodyEl.appendChild(tr);
+}
+
+function tableToText(kind){
+  const tableId = kind === "equip" ? "equipEntryTable" : "consEntryTable";
+  const table = el(tableId);
+  const rows = [...table.querySelectorAll("tbody tr")];
+
+  const parts = [];
+  for (const r of rows){
+    const name = r.querySelector(`.${kind}-name`)?.value?.trim() || "";
+    const qtyRaw = r.querySelector(`.${kind}-qty`)?.value?.trim() || "";
+    const qty = Number(qtyRaw);
+
+    if (!name) continue;
+    const safeQty = Number.isFinite(qty) && qty > 0 ? qty : 1;
+    parts.push(`${name} - ${safeQty}`);
   }
-
-  function tableToText(kind){
-    const tableId = kind === "equip" ? "equipEntryTable" : "consEntryTable";
-    const table = el(tableId);
-    const rows = [...table.querySelectorAll("tbody tr")];
-
-    const parts = [];
-    for (const r of rows){
-      const name = r.querySelector(\`.${kind}-name\`)?.value?.trim() || "";
-      const qtyRaw = r.querySelector(\`.${kind}-qty\`)?.value?.trim() || "";
-      const qty = Number(qtyRaw);
-
-      if (!name) continue;
-      const safeQty = Number.isFinite(qty) && qty > 0 ? qty : 1;
-      parts.push(\`${name} - ${safeQty}\`);
-    }
-    return parts.join("; ");
-  }
+  return parts.join("; ");
+}
 
   function syncEntryTablesToHiddenTextareas(){
     el("fEquip").value = tableToText("equip");
