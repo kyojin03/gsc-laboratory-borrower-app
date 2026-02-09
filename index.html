@@ -194,6 +194,12 @@
     <div class="muted">This logs directly into your Google Form (no Apps Script). Timestamp is automatic.</div>
 
     <div class="row" style="margin-top:12px;">
+      <!-- ✅ NEW: DATE BORROWED (required, user-chosen, no default) -->
+      <div class="field">
+        <label>Date Borrowed</label>
+        <input id="fDateBorrowed" type="date" required />
+      </div>
+
       <div class="field">
         <label>Department</label>
         <select id="fDept">
@@ -421,7 +427,6 @@
     <div style="margin-top:12px;" id="reportTitle" class="muted"></div>
     <div id="reportFacultyPrint" style="margin-top:6px; font-weight:1000;"></div>
 
-
     <div class="kpis" style="margin-top:10px;">
       <div class="kpi">
         <div class="label">Report Records</div>
@@ -586,6 +591,9 @@ function updateReportFacultyLine(){
 
   /** Entry IDs from your prefilled link */
   const ENTRY = {
+    // ✅ NEW: Date Borrowed entry id from your prefilled link
+    DateBorrowed: "entry.393651439",
+
     Department: "entry.2142992831",
     FacultyName: "entry.376247451",
     GroupsRequested: "entry.2075140760",
@@ -683,7 +691,7 @@ function updateReportFacultyLine(){
       </td>
     `;
 
-    tr.querySelector(`.${kind}-remove`).addEventListener("click", () => tr.remove());
+    tr.querySelector(\`.${kind}-remove\`).addEventListener("click", () => tr.remove());
     tbodyEl.appendChild(tr);
   }
 
@@ -694,13 +702,13 @@ function updateReportFacultyLine(){
 
     const parts = [];
     for (const r of rows){
-      const name = r.querySelector(`.${kind}-name`)?.value?.trim() || "";
-      const qtyRaw = r.querySelector(`.${kind}-qty`)?.value?.trim() || "";
+      const name = r.querySelector(\`.${kind}-name\`)?.value?.trim() || "";
+      const qtyRaw = r.querySelector(\`.${kind}-qty\`)?.value?.trim() || "";
       const qty = Number(qtyRaw);
 
       if (!name) continue;
       const safeQty = Number.isFinite(qty) && qty > 0 ? qty : 1;
-      parts.push(`${name} - ${safeQty}`);
+      parts.push(\`${name} - ${safeQty}\`);
     }
     return parts.join("; ");
   }
@@ -717,9 +725,6 @@ function updateReportFacultyLine(){
 
   // =========================
   // Parsing + aggregation for KPIs/Reports
-  // Supports BOTH:
-  //  - "Microscope - 1; Slides - 2"
-  //  - "Microscope 1 slides 2"
   // =========================
 
   function normalizeItemName(s){
@@ -730,7 +735,6 @@ function updateReportFacultyLine(){
     const raw = String(text || "").trim();
     if (!raw) return [];
 
-    // Split strong separators first; each chunk might still contain multiple pairs
     const chunks = raw
       .replace(/,/g, ";")
       .split(/[\n;]+/)
@@ -740,7 +744,6 @@ function updateReportFacultyLine(){
     const items = [];
 
     for (const chunk of chunks){
-      // Prefer explicit "name - qty" / "name: qty" / "name=qty"
       const explicit = chunk.match(/^(.+?)(?:\s*[-:=]\s*)(.+)$/);
       if (explicit){
         const nameRaw = explicit[1].trim();
@@ -759,7 +762,6 @@ function updateReportFacultyLine(){
         }
       }
 
-      // Fallback: "name qty name qty" parser
       const tokens = chunk.split(/\s+/).filter(Boolean);
       let nameParts = [];
       let foundAny = false;
@@ -783,7 +785,6 @@ function updateReportFacultyLine(){
         }
       }
 
-      // If it ends with leftover words and no qty, count as 1
       const leftover = nameParts.join(" ").trim();
       if (leftover){
         items.push({
@@ -794,7 +795,6 @@ function updateReportFacultyLine(){
         });
       }
 
-      // If we somehow found nothing, still treat whole chunk as 1
       if (!foundAny && !leftover && chunk.trim()){
         items.push({
           nameRaw: chunk.trim(),
@@ -816,9 +816,9 @@ function updateReportFacultyLine(){
   }
 
   function aggregateItemUsage(rows, type /* "equip"|"cons" */){
-    const qtyBy = new Map();      // nameKey -> total qty
-    const mentionsBy = new Map(); // nameKey -> count of appearances
-    const displayBy = new Map();  // nameKey -> first seen nameRaw
+    const qtyBy = new Map();
+    const mentionsBy = new Map();
+    const displayBy = new Map();
 
     for (const r of rows){
       const list = parseItemList(type === "equip" ? getEquipText(r) : getConsText(r));
@@ -888,17 +888,13 @@ function updateReportFacultyLine(){
     });
   }
 
-  // =========================
-  // KPI: Dynamic department split (percentages)
-  // =========================
-
   function normalizeDeptKey(s){
     return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
   }
 
   function departmentSplitPercent(rows){
-    const displayBy = new Map(); // deptKey -> first seen display
-    const countBy = new Map();   // deptKey -> count
+    const displayBy = new Map();
+    const countBy = new Map();
 
     for (const r of rows){
       const raw = String(getField(r, "Department") || "").trim();
@@ -1041,7 +1037,7 @@ function updateReportFacultyLine(){
       allRows = rowsToObjects(parsed);
       viewRows = [...allRows];
       renderAll();
-      populateFacultyDatalist();   // ← ADD THIS
+      populateFacultyDatalist();
       updateReportFacultyLine();
       toast("Data loaded.");
     }catch(err){
@@ -1059,6 +1055,9 @@ function updateReportFacultyLine(){
   }
 
   function clearLogForm(){
+    // ✅ NEW: clear Date Borrowed (required; no default)
+    el("fDateBorrowed").value = "";
+
     el("fDept").value = "CAHP";
     el("fFaculty").value = "";
     el("fGroups").value = "";
@@ -1075,8 +1074,10 @@ function updateReportFacultyLine(){
   }
 
   function submitLog(){
-    // NEW: generate text from tables into hidden textareas
     syncEntryTablesToHiddenTextareas();
+
+    // ✅ NEW: read Date Borrowed
+    const dateBorrowed = el("fDateBorrowed").value.trim();
 
     const dept = el("fDept").value.trim();
     const faculty = el("fFaculty").value.trim();
@@ -1085,6 +1086,9 @@ function updateReportFacultyLine(){
     const cons = el("fCons").value.trim();
     const incident = el("fIncident").value.trim();
     const incidentDetails = el("fIncidentDetails").value.trim();
+
+    // ✅ NEW: required validation for Date Borrowed
+    if (!dateBorrowed) { toast("Date Borrowed is required."); return; }
 
     if (!faculty) { toast("Faculty Name is required."); return; }
     if (!equip && !cons) { toast("Fill Equipment or Consumables (at least one)."); return; }
@@ -1103,6 +1107,9 @@ function updateReportFacultyLine(){
       input.value = value;
       form.appendChild(input);
     };
+
+    // ✅ NEW: submit Date Borrowed to Google Form
+    add(ENTRY.DateBorrowed, dateBorrowed);
 
     add(ENTRY.Department, dept);
     add(ENTRY.FacultyName, faculty);
@@ -1129,14 +1136,12 @@ function updateReportFacultyLine(){
     }, 900);
   }
 
-  // ========= Report range + report calculations =========
-
   function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
   function endOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23,59,59,999); }
 
   function reportRangeFromUI(){
     const period = el("period").value;
-    const monthVal = el("monthPick").value; // "YYYY-MM"
+    const monthVal = el("monthPick").value;
     if (!monthVal){
       const from = el("fromDate").value ? new Date(el("fromDate").value) : null;
       const to = el("toDate").value ? new Date(el("toDate").value) : null;
@@ -1246,8 +1251,8 @@ function updateReportFacultyLine(){
 
   // Reports
   el("runReportBtn").addEventListener("click", () => {
-  applyFilters(); // updates viewRows using dept/faculty/from/to inputs
-  runReport();    // now reportRows is truly filtered
+  applyFilters();
+  runReport();
 });
 
   el("printBtn").addEventListener("click", () => window.print());
@@ -1267,6 +1272,9 @@ function updateReportFacultyLine(){
   // init with one blank row each
   addEntryRow(el("equipEntryTable").querySelector("tbody"), "equip");
   addEntryRow(el("consEntryTable").querySelector("tbody"), "cons");
+
+  // ✅ make sure Date Borrowed starts blank (required)
+  if (el("fDateBorrowed")) el("fDateBorrowed").value = "";
 
   loadData();
 });
