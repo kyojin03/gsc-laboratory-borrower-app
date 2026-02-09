@@ -480,7 +480,8 @@
     <!-- NEW: Most used tables -->
     <div class="card" style="margin-top:12px;">
       <div style="font-weight:1000;">Most Used Equipment (within report)</div>
-      <div class="table-wrap" style="margin-top:10px;">
+      <!-- ✅ UPDATED: scrollable container -->
+      <div class="table-wrap" style="margin-top:10px; max-height:300px; overflow:auto;">
         <table id="equipReport">
           <thead><tr><th>Equipment</th><th>Total Qty</th><th># Mentions</th></tr></thead>
           <tbody></tbody>
@@ -491,7 +492,8 @@
 
     <div class="card" style="margin-top:12px;">
       <div style="font-weight:1000;">Most Used Consumables (within report)</div>
-      <div class="table-wrap" style="margin-top:10px;">
+      <!-- ✅ UPDATED: scrollable container -->
+      <div class="table-wrap" style="margin-top:10px; max-height:300px; overflow:auto;">
         <table id="consReport">
           <thead><tr><th>Consumable</th><th>Total Qty</th><th># Mentions</th></tr></thead>
           <tbody></tbody>
@@ -1228,8 +1230,9 @@ function tableToText(kind){
     el("rTopEquip").textContent = eqAgg.top ? `${eqAgg.top.name} (${Number(eqAgg.top.qty).toFixed(0)})` : "—";
     el("rTopCons").textContent = coAgg.top ? `${coAgg.top.name} (${Number(coAgg.top.qty).toFixed(0)})` : "—";
 
-    renderTopTable(el("equipReport"), eqAgg.items, 15);
-    renderTopTable(el("consReport"), coAgg.items, 15);
+    // ✅ UPDATED: show ALL rows in table; the container will scroll
+    renderTopTable(el("equipReport"), eqAgg.items, eqAgg.items.length);
+    renderTopTable(el("consReport"), coAgg.items, coAgg.items.length);
 
     toast("Report generated.");
   }
